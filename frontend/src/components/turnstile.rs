@@ -94,16 +94,16 @@ impl Turnstile {
             }
         };
 
-        let callback = Closure::wrap(Box::new(move |value: JsValue| {
+        let callback: Closure<dyn FnMut(JsValue)> = Closure::new(move |value: JsValue| {
             log::debug!("Turnstile callback {:?}", &value);
             if let Some(s) = value.as_string() {
                 cb(s);
             }
-        }) as Box<dyn FnMut(JsValue)>);
+        });
 
-        let error_callback = Closure::wrap(Box::new(move |value: JsValue| {
+        let error_callback: Closure<dyn FnMut(JsValue)> = Closure::new(move |value: JsValue| {
             log::error!("Turnstile error {:?}", &value);
-        }) as Box<dyn FnMut(JsValue)>);
+        });
 
         let args = js_sys::Object::new();
 

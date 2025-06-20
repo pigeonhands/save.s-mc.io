@@ -1,4 +1,5 @@
 use crate::components::turnstile;
+use closure::closure;
 use common::{PublicKeyRequest, PublicKeyResponse};
 use gloo_net::http::Request;
 use web_sys::HtmlInputElement;
@@ -34,21 +35,13 @@ pub fn send_form() -> Html {
         log::debug!("CF callback {}", a);
     }));
 
-    let show_validation = use_state(|| false);
-
-    let validation_classes = |state_handle: UseStateHandle<AttrValue>| {
-        log::info!(
-            "validating. {:?} - {}",
-            state_handle.clone(),
-            (*state_handle).clone().is_empty()
-        );
-        if *show_validation && (*state_handle).is_empty() {
-            "invalid-input"
-        } else {
-            ""
+    use_mount(closure!(clone cf_turnstile, || {
+        if cf_turnstile.enabled() {
+            cf_turnstile.render();
         }
-    };
+    }));
 
+    let show_validation = use_state(|| false);
     let form = SendFormState {
         email: use_state(AttrValue::default),
         description: use_state(AttrValue::default),
@@ -57,37 +50,31 @@ pub fn send_form() -> Html {
     };
 
     let onchange_email = {
-        let email = form.email.clone();
-        Callback::from(move |e: Event| {
+        Callback::from(closure!(clone form.email, |e: Event| {
             let input: HtmlInputElement = e.target_unchecked_into();
             email.set(input.value().into());
-        })
+        }))
     };
 
     let onchange_description = {
-        let description = form.description.clone();
-        Callback::from(move |e: Event| {
+        Callback::from(closure!(clone form.description, |e: Event| {
             let input: HtmlInputElement = e.target_unchecked_into();
             description.set(input.value().into());
-        })
+        }))
     };
 
     let onchange_message = {
-        let message = form.message.clone();
-        Callback::from(move |e: Event| {
+        Callback::from(closure!(clone form.message, |e: Event| {
             let input: HtmlInputElement = e.target_unchecked_into();
             message.set(input.value().into());
-        })
+        }))
     };
 
-    use_mount({
-        let cf_turnstile = cf_turnstile.clone();
-        move || {
-            if cf_turnstile.enabled() {
-                cf_turnstile.render();
-            }
-        }
-    });
+    let on_edit_message = {
+        Callback::from(closure!(clone form.encrypted_message, |_| {
+            encrypted_message.set(None);
+        }))
+    };
 
     let on_encrypt = {
         let form = form.clone();
@@ -137,12 +124,17 @@ pub fn send_form() -> Html {
         })
     };
 
-    let on_edit_message = {
-        let form = form.clone();
-
-        Callback::from(move |_| {
-            form.encrypted_message.set(None);
-        })
+    let validation_classes = |state_handle: UseStateHandle<AttrValue>| {
+        log::info!(
+            "validating. {:?} - {}",
+            state_handle.clone(),
+            (*state_handle).clone().is_empty()
+        );
+        if *show_validation && (*state_handle).is_empty() {
+            "invalid-input"
+        } else {
+            ""
+        }
     };
 
     let message_display = || {

@@ -9,6 +9,7 @@ license = "MIT OR Apache-2.0"
 keywords = ["yew", "trunk"]
 categories = ["gui", "wasm", "web-programming"]
 
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 common = { path = "../common", version = "*" }
@@ -26,3 +27,4 @@ yew-hooks = "0.3.3"
 yew-router = "0.18.0"
 pgp = { version = "0.16.0", features = ["wasm"] }
 rand = { version = "0.8.5", features = ["std_rng"], default-features = false }
+closure = "0.3.0"

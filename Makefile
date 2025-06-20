@@ -1,3 +1,19 @@
+release ?=
+
+EXTRA_FLAGS ?= 
+EXTRA_TRUNK_FLAGS ?= 
+EXTRA_WORKER_FLAGS ?= 
+
+
+ifdef release
+	EXTRA_TRUNK_FLAGS := --release
+	EXTRA_WORKER_BUILD_FLAGS := --release
+else
+	EXTRA_TRUNK_FLAGS := --cargo-profile dev
+	EXTRA_WORKER_BUILD_FLAGS := --dev
+endif
+
+all: dev
 
 .PHONY: clean
 clean:
@@ -8,21 +24,25 @@ install-deps:
 	cargo install worker-build
 	cargo install --locked trunk
 
-.PHONY: build-worker
-build-worker:
-	cd ./worker && worker-build --release
-	mv ./worker/build ./dist
-
 .PHONY: build-frontend
 build-frontend:
-	cd ./frontend && trunk build --dist ../dist/assets
+	cd ./frontend && trunk build $(EXTRA_TRUNK_FLAGS) --dist ../dist/assets
+
+.PHONY: build-worker
+build-worker:
+	cd ./worker && worker-build $(EXTRA_WORKER_BUILD_FLAGS)
+	mv ./worker/build ./dist
 
 .PHONY: build
 build: clean build-worker build-frontend;
 
+.PHONY: build-release
+build-release:
+	$(MAKE) release=1 build
+
 .PHONY: dev
-dev: build
-	npx wrangler dev
+dev:
+	npx wrangler dev --env dev
 
 .PHONY: deploy
 deploy:

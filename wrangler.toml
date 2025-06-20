@@ -1,9 +1,13 @@
-name = "run-s-mc-io"
+name = "save-s-mc-io"
 main = "dist/worker/shim.mjs"
 compatibility_date = "2025-06-20"
 
+# routes = [
+#     { pattern = "save.s-mc.io", custom_domain = true }
+# ]
+
 [build]
-command = "make build"
+command = "make build release=1"
 watch_dir = ["./frontend/src/", "./worker/src/"]
 
 [assets]
@@ -12,3 +16,6 @@ binding = "ASSETS"
 
 [observability]
 enabled = true
+
+[env.dev]
+build.command = "make build"
