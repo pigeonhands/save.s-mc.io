@@ -1,0 +1,14 @@
+name = "run-s-mc-io"
+main = "dist/worker/shim.mjs"
+compatibility_date = "2025-06-20"
+
+[build]
+command = "make build"
+watch_dir = ["./frontend/src/", "./worker/src/"]
+
+[assets]
+directory = "./dist/assets"
+binding = "ASSETS"
+
+[observability]
+enabled = true
