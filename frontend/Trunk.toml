@@ -1,0 +1,12 @@
+[build]
+target = "index.html"
+release = true
+filehash = false
+minify = "on_release"
+
+[tools]
+tailwindcss = "4.1.10"
+# [[hooks]]
+# stage = "build"
+# command = "sh"
+# command_arguments = ["-c", "cd ./frontend && npm run build"]

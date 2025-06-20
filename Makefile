@@ -15,14 +15,14 @@ build-worker:
 
 .PHONY: build-frontend
 build-frontend:
-	trunk build --dist ./dist/assets
+	cd ./frontend && trunk build --dist ../dist/assets
 
 .PHONY: build
 build: clean build-worker build-frontend;
 
 .PHONY: dev
 dev: build
-		npx wrangler dev
+	npx wrangler dev
 
 .PHONY: deploy
 deploy:
