@@ -1,21 +1,15 @@
 @layer theme, base, components, utilities;
 
-@import "./static/webtui/base.css";
+@import "./static/css/webtui/style.css";
 
-/* Utils */
-@import "./static/webtui/box.css";
-@import "./static/webtui/button.css";
-@import "./static/webtui/badge.css";
-
-@import "./static/webtui/catppuccin.css";
-
-[box_tui]::before {
+[box-]::before {
   --box-border-color: var(--surface1);
 }
 
-[box_tui].invalid-input::before {
+[box-].invalid-input::before {
   --box-border-color: var(--red);
 }
+
 
 .header { 
     display: flex;

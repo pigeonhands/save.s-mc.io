@@ -1,5 +1,5 @@
 mod error;
-mod extractors;
+mod http;
 mod routes;
 mod turnstile;
 
@@ -20,7 +20,7 @@ fn start() {
 #[event(fetch)]
 async fn fetch(
     req: HttpRequest,
-    _env: Env,
+    env: Env,
     _ctx: Context,
 ) -> Result<axum::http::Response<axum::body::Body>> {
     Ok(router().call(req).await?)

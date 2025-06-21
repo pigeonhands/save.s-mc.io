@@ -1,16 +1,23 @@
-<!doctype html>
-<html lang="en" data-webtui-theme="catppuccin-mocha">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" href="./static/favicon.png" />
-        <link data-trunk rel="copy-dir" href="static">
-        <link data-trunk rel="tailwind-css" href="./tailwind.css" />
-        <link data-trunk rel="sass" href="index.scss" />
-        <base data-trunk-public-url/>
+<!DOCTYPE html>
+<html data-webtui-theme="catppuccin-mocha">
 
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
-	</head>
-	<body data-sveltekit-preload-data="hover">
-	</body>
+<head>
+    <!-- Add a plain CSS file: see https://trunkrs.dev/assets/#css -->
+    <link data-trunk rel="scss" href="public/styles.scss" />
+    <link data-trunk rel="tailwind-css" href="./public/tailwind.css" />
+
+    <!-- Include favicon in dist output: see https://trunkrs.dev/assets/#icon -->
+    <link data-trunk rel="icon" href="public/favicon.ico" />
+
+
+    <link data-trunk rel="copy-dir" href="./public/static">
+
+    <!-- include support for `wasm-bindgen --weak-refs` - see: https://rustwasm.github.io/docs/wasm-bindgen/reference/weak-references.html -->
+    <link data-trunk rel="rust" data-wasm-opt="z" data-weak-refs />
+
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"></script>
+</head>
+
+<body></body>
+
 </html>

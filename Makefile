@@ -53,10 +53,12 @@ deploy:
 
 .PHONY: get-tui-component
 get-tui-component:
-	cd ./frontend/static/webtui && \
+	cd ./frontend/public/static/css/webtui && \
 		curl https://cdn.jsdelivr.net/npm/@webtui/css@0.1.2/dist/components/$(component).css \
-			| sed 's/\-=/_tui=/g' \
-			| sed 's/\-~/_tui~/g' \
-			| grep 'tui' \
+		 > $(component).css
+
+			# | sed 's/\-=/_tui=/g' \
+			# | sed 's/\-~/_tui~/g' \
+			# | grep 'tui' \
 			> $(component).css
 

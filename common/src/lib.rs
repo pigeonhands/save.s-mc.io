@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PublicKeyRequest {
     pub email: String,
 }
@@ -11,7 +11,7 @@ impl PublicKeyRequest {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PublicKeyResponse {
     pub email: String,
     pub pub_key: String,

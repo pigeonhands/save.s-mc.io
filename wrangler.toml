@@ -19,3 +19,9 @@ enabled = true
 
 [env.dev]
 build.command = "make build"
+build.watch_dir = ["./frontend/src/", "./worker/src/"]
+
+[[env.dev.d1_databases]]
+binding = "SAVE_DB"
+database_name = "save"
+database_id = "dev"

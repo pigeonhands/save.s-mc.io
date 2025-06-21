@@ -16,7 +16,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 common = { path = "../common", version = "*" }
-worker = { version = "0.6.0", features = ['http', 'axum'] }
+worker = { version = "0.6.0", features = ['http', 'axum', 'd1'] }
 worker-macros = { version = "0.6.0", features = ['http'] }
 axum = { version = "0.8", default-features = false, features = [
     "query",

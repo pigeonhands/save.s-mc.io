@@ -1,75 +1,79 @@
-# Yew Trunk Template
+<picture>
+    <source srcset="https://raw.githubusercontent.com/leptos-rs/leptos/main/docs/logos/Leptos_logo_Solid_White.svg" media="(prefers-color-scheme: dark)">
+    <img src="https://raw.githubusercontent.com/leptos-rs/leptos/main/docs/logos/Leptos_logo_RGB.svg" alt="Leptos Logo">
+</picture>
 
-This is a fairly minimal template for a Yew app that's built with [Trunk].
+# Leptos Client-Side Rendered (CSR) App Starter Template
 
-## Usage
+This is a template for use with the [Leptos][Leptos] web framework using the [Trunk][Trunk] tool to compile and serve your app in development.
 
-For a more thorough explanation of Trunk and its features, please head over to the [repository][trunk].
+## Creating your repo from the template
 
-### Installation
+This template requires you to have `cargo-generate` and `trunk` installed. [`leptosfmt`](https://github.com/bram209/leptosfmt) is optional but highly recommended. You can install them with
 
-If you don't already have it installed, it's time to install Rust: <https://www.rust-lang.org/tools/install>.
-The rest of this guide assumes a typical Rust installation which contains both `rustup` and Cargo.
+```sh
+cargo install cargo-generate trunk leptosfmt
+```
 
-To compile Rust to WASM, we need to have the `wasm32-unknown-unknown` target installed.
-If you don't already have it, install it with the following command:
 
-```bash
+To set up your project with this template, run
+
+```sh
+cargo generate --git https://github.com/leptos-community/start-csr
+```
+
+to generate your new project, then
+
+```sh
+cd frontend
+```
+
+to go to your newly created project.
+
+By default, this template uses Rust `nightly` and requires that you've installed the `wasm` compilation target for your toolchain.
+
+
+Sass and Tailwind are also supported by the Trunk build tool, but are optional additions: [see here for more info on how to set those up with Trunk][Trunk-instructions].
+
+
+If you don't have Rust nightly, you can install it with
+```sh
+rustup toolchain install nightly --allow-downgrade
+```
+
+You can add the `wasm` compilation target to rust using
+```sh
 rustup target add wasm32-unknown-unknown
 ```
 
-Now that we have our basics covered, it's time to install the star of the show: [Trunk].
-Simply run the following command to install it:
 
-```bash
-cargo install trunk wasm-bindgen-cli
+## Developing your Leptos CSR project
+
+To develop your Leptos CSR project, running
+
+```sh
+trunk serve --port 3000 --open
 ```
 
-That's it, we're done!
+will open your app in your default browser at `http://localhost:3000`.
 
-### Running
 
-```bash
-trunk serve
-```
+## Deploying your Leptos CSR project
 
-Rebuilds the app whenever a change is detected and runs a local server to host it.
+To build a Leptos CSR app for release, use the command
 
-There's also the `trunk watch` command which does the same thing but without hosting it.
-
-### Release
-
-```bash
+```sh
 trunk build --release
 ```
 
-This builds the app in release mode similar to `cargo build --release`.
-You can also pass the `--release` flag to `trunk serve` if you need to get every last drop of performance.
+This will output the files necessary to run your app into the `dist` folder; you can then use any static site host to serve these files.
 
-Unless overwritten, the output will be located in the `dist` directory.
-
-## Using this template
-
-There are a few things you have to adjust when adopting this template.
-
-### Remove example code
-
-The code in [src/main.rs](src/main.rs) specific to the example is limited to only the `view` method.
-There is, however, a fair bit of Sass in [index.scss](index.scss) you can remove.
-
-### Update metadata
-
-Update the `version`, `description` and `repository` fields in the [Cargo.toml](Cargo.toml) file.
-The [index.html](index.html) file also contains a `<title>` tag that needs updating.
+For further information about hosting Leptos CSR apps, please refer to [the Leptos Book chapter on deployment available here][deploy-csr].
 
 
-Finally, you should update this very `README` file to be about your app.
+[Leptos]: https://github.com/leptos-rs/leptos
 
-### License
+[Trunk]: https://github.com/trunk-rs/trunk
+[Trunk-instructions]: https://trunkrs.dev/assets/
 
-The template ships with both the Apache and MIT license.
-If you don't want to have your app dual licensed, just remove one (or both) of the files and update the `license` field in `Cargo.toml`.
-
-There are two empty spaces in the MIT license you need to fill out: `` and `Sam M <git@s-mc.io>`.
-
-[trunk]: https://github.com/thedodd/trunk
+[deploy-csr]: https://book.leptos.dev/deployment/csr.html

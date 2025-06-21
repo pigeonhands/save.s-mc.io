@@ -1,8 +1,13 @@
 [workspace]
+members = [
+    "./common",
+    "./frontend",
+    "./worker",
+    "frontend",
+]
 resolver = "2"
-members = ["./frontend", "./worker", "./common"]
 
 [profile.release]
 lto = true
-strip = true
 codegen-units = 1
+strip = true

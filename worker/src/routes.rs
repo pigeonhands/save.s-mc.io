@@ -1,6 +1,6 @@
 use common::{PublicKeyRequest, PublicKeyResponse};
 
-use crate::{error::HttpResult, extractors::CaptchaResponse};
+use crate::error::HttpResult;
 use axum::{Json, Router, extract::Query, response::IntoResponse, routing::get};
 
 pub fn router() -> Router {

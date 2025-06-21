@@ -2,16 +2,14 @@
 name = "frontend"
 version = "0.1.0"
 edition = "2024"
-description = "Template for starting a Yew project using Trunk"
-readme = "README.md"
-repository = "https://github.com/yewstack/yew-trunk-minimal-template"
-license = "MIT OR Apache-2.0"
-keywords = ["yew", "trunk"]
-categories = ["gui", "wasm", "web-programming"]
-
+authors = ["Sam M <git@s-mc.io>"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [dependencies]
+leptos = { version = "0.8", features = ["csr"] }
+leptos_meta = { version = "0.8" }
+leptos_router = { version = "0.8" }
 common = { path = "../common", version = "*" }
 console_error_panic_hook = "0.1.7"
 gloo = "0.11.0"
@@ -22,9 +20,24 @@ wasm-bindgen = { version = "0.2.100" }
 wasm-bindgen-futures = "0.4.50"
 wasm-logger = "0.2.0"
 web-sys = { version = "0.3.77", features = ["Attr"] }
-yew = { version = "0.21", features = ["csr"] }
-yew-hooks = "0.3.3"
-yew-router = "0.18.0"
 pgp = { version = "0.16.0", features = ["wasm"] }
 rand = { version = "0.8.5", features = ["std_rng"], default-features = false }
-closure = "0.3.0"
+anyhow = "1.0.98"
+leptos-use = "0.16.2"
+
+# utils
+# strum = { version = "0.25", features = ["derive", "strum_macros"] }
+# strum_macros = "0.25"
+
+
+[dev-dependencies]
+wasm-bindgen = "0.2"
+wasm-bindgen-test = "0.3"
+web-sys = { version = "0.3", features = ["Document", "Window"] }
+
+
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = "abort"
