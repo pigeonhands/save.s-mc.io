@@ -92,7 +92,7 @@ pub fn render() -> bool {
 
     t_js.render(".cf-turnstile".into(), args);
 
-    false
+    true
 }
 
 pub fn reset() -> bool {

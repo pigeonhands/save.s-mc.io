@@ -6,7 +6,7 @@ EXTRA_WORKER_FLAGS ?=
 
 
 ifdef release
-	# EXTRA_TRUNK_FLAGS := --release
+	EXTRA_TRUNK_FLAGS := --release
 	EXTRA_WORKER_BUILD_FLAGS := --release
 else
 	EXTRA_TRUNK_FLAGS := --cargo-profile dev

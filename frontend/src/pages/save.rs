@@ -5,7 +5,7 @@ use leptos::{
 };
 use leptos_use::storage::use_session_storage;
 
-use crate::{components::turnstile, providers::api};
+use crate::providers::api;
 
 #[component]
 pub fn Save() -> impl IntoView {
@@ -65,14 +65,6 @@ pub fn SaveForm() -> impl IntoView {
         }
     });
 
-    Effect::new(move |_| {
-        if turnstile::enabled() {
-            if !turnstile::render() {
-                log::error!("Failed to render turnstile");
-            }
-        }
-    });
-
     let encrypt_message =
         |encryption_key: String,
          description: ReadSignal<String>,
@@ -129,7 +121,7 @@ pub fn SaveForm() -> impl IntoView {
             set_encrypting.set(false);
         } else {
             spawn_local(async move {
-                let new_key = api::get_public_key(email.get_untracked(), None).await;
+                let new_key = api::get_public_key(email.get_untracked()).await;
 
                 match new_key {
                     Ok(key) => {
@@ -258,14 +250,6 @@ pub fn SaveForm() -> impl IntoView {
                     }.into_any()
                 }}
 
-                { move || if turnstile::enabled() {
-                    view! {
-                        <turnstile::Turnstile />
-                    }.into_any()
-                    }else { view!{
-                        <></>
-                    }.into_any() }
-                }
                 </div>
 
     }

@@ -1,7 +1,7 @@
 #!/usr/bin/env -S cargo +nightly -Zscript
 ---cargo
 [dependencies]
-frontend = { version = "*", path = "../frontend" }
+frontend = { version = "*", path = "../frontend", default-features = false }
 leptos_axum = { version = "0.8.2", default-features = false }
 ---
 

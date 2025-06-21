@@ -3,6 +3,8 @@ use leptos::prelude::*;
 use leptos_meta::*;
 use leptos_router::{components::*, path};
 
+use crate::components::turnstile;
+
 // Modules
 mod components;
 mod pages;
@@ -41,6 +43,15 @@ pub fn App() -> impl IntoView {
 }
 #[component]
 pub fn Layout(children: Children) -> impl IntoView {
+    #[cfg(feature = "turnstile")]
+    Effect::new(move |_| {
+        if turnstile::enabled() {
+            if !turnstile::render() {
+                log::error!("Failed to render turnstile");
+            }
+        }
+    });
+
     view! {
         <div class="grid grid-rows-[auto_1fr_auto] h-lvh" shear-="top">
             <header class="header" >
@@ -64,7 +75,16 @@ pub fn Layout(children: Children) -> impl IntoView {
                 </aside>
             </div>
             <footer>
+
                 <span class="container mx-auto flex justify-center items-center my-5" style="color: grey">
+                    { move || if turnstile::enabled() {
+                        view! {
+                            <turnstile::Turnstile />
+                        }.into_any()
+                        }else { view!{
+                            <></>
+                        }.into_any() }
+                    }
                     <a href="mailto:contact@s-mc.io">{ "contact@s-mc.io" }</a><span class="mx-2">{ "-" }</span><a href="/pgp.txt">{ "pgp" }</a>
                 </span>
             </footer>

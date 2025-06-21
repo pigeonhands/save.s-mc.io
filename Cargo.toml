@@ -3,6 +3,7 @@ members = ["./common", "./frontend", "./worker"]
 resolver = "2"
 
 [profile.release]
-# lto = true
-codegen-units = 1
-strip = true
+lto = true        # causing build errors
+codegen-units = 1 # causing build errors
+# strip = true # causing build errors
+opt-level = 'z'

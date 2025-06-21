@@ -18,14 +18,6 @@ pub fn Register() -> impl IntoView {
 
 #[component]
 pub fn RegisterForm() -> impl IntoView {
-    Effect::new(move |_| {
-        if turnstile::enabled() {
-            if !turnstile::render() {
-                log::error!("Failed to render turnstile");
-            }
-        }
-    });
-
     view! {
         <div class="p-5 flex flex-col items-center h-full" gap-="0">
 
@@ -56,15 +48,6 @@ pub fn RegisterForm() -> impl IntoView {
 
 
             </div>
-
-                { move || if turnstile::enabled() {
-                    view! {
-                        <turnstile::Turnstile />
-                    }.into_any()
-                    }else { view!{
-                        <></>
-                    }.into_any() }
-                }
 
             </div>
 

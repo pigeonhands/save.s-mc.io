@@ -2,6 +2,8 @@ use anyhow::bail;
 use common::{PublicKeyRequest, PublicKeyResponse};
 use gloo::net::http::{Request, RequestBuilder};
 
+use crate::components::turnstile;
+
 fn get(url: &str, captcha_result: Option<&str>) -> RequestBuilder {
     let builder = Request::get(url);
 
@@ -13,11 +15,8 @@ fn get(url: &str, captcha_result: Option<&str>) -> RequestBuilder {
     builder
 }
 
-pub async fn get_public_key(
-    email: String,
-    captcha_result: Option<String>,
-) -> anyhow::Result<PublicKeyResponse> {
-    let resp = get("/api/save/public-key", captcha_result.as_deref())
+pub async fn get_public_key(email: String) -> anyhow::Result<PublicKeyResponse> {
+    let resp = get("/api/save/public-key", turnstile::response().as_deref())
         .query(
             PublicKeyRequest {
                 email: email.into(),
