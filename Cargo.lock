@@ -4547,7 +4547,6 @@ dependencies = [
  "serde",
  "thiserror 2.0.12",
  "tower-service",
- "wasm-logger",
  "worker 0.6.0",
  "worker-macros",
 ]

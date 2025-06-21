@@ -6,7 +6,7 @@ EXTRA_WORKER_FLAGS ?=
 
 
 ifdef release
-	EXTRA_TRUNK_FLAGS := --release
+	# EXTRA_TRUNK_FLAGS := --release
 	EXTRA_WORKER_BUILD_FLAGS := --release
 else
 	EXTRA_TRUNK_FLAGS := --cargo-profile dev
@@ -17,7 +17,7 @@ all: dev
 
 .PHONY: clean
 clean:
-	rm -r ./dist || true
+	if [ -d "./dist" ]; then rm -r ./dist; fi
 
 .PHONY: install-deps
 install-deps:
@@ -33,8 +33,12 @@ build-worker:
 	cd ./worker && worker-build $(EXTRA_WORKER_BUILD_FLAGS)
 	mv ./worker/build ./dist
 
+.PHONY: gen-static-routes
+gen-static-routes:
+	./scripts/static-routes.rs
+
 .PHONY: build
-build: clean build-worker build-frontend;
+build: clean build-worker build-frontend gen-static-routes;
 
 .PHONY: build-release
 build-release:
@@ -42,7 +46,7 @@ build-release:
 
 .PHONY: dev
 dev:
-	npx wrangler dev --env dev
+	npx wrangler dev --env dev --log-level info
 
 .PHONY: deploy
 deploy:
@@ -50,6 +54,12 @@ deploy:
 		TURNSTILE_SITE_KEY="1x00000000000000000000AA" \
 	npx wrangler deploy
 
+.PHONY: d1-exec
+d1-exec:
+	npx wrangler d1 execute save --local --env dev --file=./worker/schema.sql
+
+.PHONY: d1-query
+	npx wrangler d1 execute --env dev save --local --command="$(query)"
 
 .PHONY: get-tui-component
 get-tui-component:

@@ -1,14 +1,25 @@
-use common::{PublicKeyRequest, PublicKeyResponse};
+CREATE TABLE IF NOT EXISTS users (
+    user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT,
+    is_admin BOOL DEFAULT FALSE
+);
 
-use crate::error::HttpResult;
-use axum::{Json, Router, extract::Query, response::IntoResponse, routing::get};
+CREATE UNIQUE INDEX IF NOT EXISTS idx_email ON users (email);
 
-pub fn router() -> Router {
-    Router::new().route("/public-key", get(get_public_key))
-}
+CREATE TABLE IF NOT EXISTS keys (
+    user_id INTEGER PRIMARY KEY,
+    public_key TEXT NOT NULL,
 
-static DEBUG_KEY: &'static str = r#"
------BEGIN PGP PUBLIC KEY BLOCK-----
+    FOREIGN KEY(user_id) REFERENCES users(user_id)
+);
+
+
+INSERT INTO users (email, is_admin) VALUES (
+    "sam@s-mc.io", true
+); 
+
+INSERT INTO keys (user_id, public_key) VALUES (
+    last_insert_rowid(), "-----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mDMEZ8zPYhYJKwYBBAHaRw8BAQdAPZIcUd/BGPEuiUp3e2U7dIWFl+n4DsOFjXj2
 dGhGA4q0E1NhbSBNIDxzYW1Acy1tYy5pbz6IlAQTFgoAPBYhBDTql6996KUygFkd
@@ -30,16 +41,8 @@ CgAmFiEENOqXr33opTKAWR2jVCHc+roOkqIFAmhR2CkCGyAFCQWjmoAACgkQVCHc
 +roOkqLOgQD9FPXGjjrhZjoKWQmWmJOGKw24v0bh2cKq94Fqt3hhwwgBAKuThIFg
 qc4Y/iqG99yF2DwV/RmyaRRqqjeALeBgF3IB
 =rRWJ
------END PGP PUBLIC KEY BLOCK-----
-"#;
+-----END PGP PUBLIC KEY BLOCK-----"
+);
 
-#[axum::debug_handler]
-pub async fn get_public_key(
-    _captcha: CaptchaResponse,
-    params: Query<PublicKeyRequest>,
-) -> HttpResult<impl IntoResponse> {
-    Ok(Json(PublicKeyResponse {
-        email: params.email.clone(),
-        pub_key: DEBUG_KEY.into(),
-    }))
-}
+
+

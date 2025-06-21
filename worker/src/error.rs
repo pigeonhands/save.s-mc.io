@@ -21,10 +21,13 @@ pub enum HttpError {
     #[error("error in the request body")]
     UnprocessableEntity,
 
-    #[error("Internal http error")]
+    #[error("Internal http error. {0:?}")]
     HttpError(reqwest::Error),
 
-    #[error("an internal server error occurred")]
+    #[error("Internal worker error. {0:?}")]
+    WorkerError(worker::Error),
+
+    #[error("an internal server error occurred. {0:?}")]
     Anyhow(#[from] anyhow::Error),
 }
 
@@ -36,6 +39,7 @@ impl HttpError {
             Self::BadCaptcha => StatusCode::BAD_REQUEST,
             Self::NotFound => StatusCode::NOT_FOUND,
             Self::HttpError(_) => StatusCode::INTERNAL_SERVER_ERROR,
+            Self::WorkerError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::UnprocessableEntity { .. } => StatusCode::UNPROCESSABLE_ENTITY,
             Self::Anyhow(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
@@ -71,5 +75,11 @@ impl IntoResponse for HttpError {
 impl From<reqwest::Error> for HttpError {
     fn from(value: reqwest::Error) -> Self {
         Self::HttpError(value)
+    }
+}
+
+impl From<worker::Error> for HttpError {
+    fn from(value: worker::Error) -> Self {
+        Self::WorkerError(value)
     }
 }

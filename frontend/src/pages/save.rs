@@ -5,25 +5,44 @@ use leptos::{
 };
 use leptos_use::storage::use_session_storage;
 
-use crate::providers::api;
+use crate::{components::turnstile, providers::api};
 
 #[component]
 pub fn Save() -> impl IntoView {
     view! {
-        <div class="h-full" box-="round" shear-="top">
-            <div class="header" >
-                <span class="box-title">
-                    <h1> "Save" </h1>
-                </span>
-            </div>
+        <ErrorBoundary fallback=|errors| {
+            view! {
+                <h1>"Uh oh! Something went wrong!"</h1>
 
-            <SendForm />
-        </div>
+                <p>"Errors: "</p>
+                // Render a list of errors as strings - good for development purposes
+                <ul>
+                    {move || {
+                        errors
+                            .get()
+                            .into_iter()
+                            .map(|(_, e)| view! { <li>{e.to_string()}</li> })
+                            .collect_view()
+                    }}
+
+                </ul>
+            }
+        }>
+            <div class="h-full" box-="round" shear-="top">
+                <div class="header" >
+                    <span class="box-title">
+                        <h1> "Save" </h1>
+                    </span>
+                </div>
+
+                <SaveForm />
+            </div>
+        </ErrorBoundary >
     }
 }
 
 #[component]
-pub fn SendForm() -> impl IntoView {
+pub fn SaveForm() -> impl IntoView {
     let (last_email_saved, set_last_email_saved, _) =
         use_session_storage::<String, FromToStringCodec>(format!("settings:last-email"));
 
@@ -43,6 +62,14 @@ pub fn SendForm() -> impl IntoView {
             set_message_display.set(enc_msg);
         } else {
             set_message_display.set(message.get());
+        }
+    });
+
+    Effect::new(move |_| {
+        if turnstile::enabled() {
+            if !turnstile::render() {
+                log::error!("Failed to render turnstile");
+            }
         }
     });
 
@@ -180,7 +207,6 @@ pub fn SendForm() -> impl IntoView {
 
                 </div>
 
-                //{cf_turnstile.elem()}
 
             { move || if encrypted_message.get().is_some() {
                 view! {
@@ -232,6 +258,14 @@ pub fn SendForm() -> impl IntoView {
                     }.into_any()
                 }}
 
+                { move || if turnstile::enabled() {
+                    view! {
+                        <turnstile::Turnstile />
+                    }.into_any()
+                    }else { view!{
+                        <></>
+                    }.into_any() }
+                }
                 </div>
 
     }

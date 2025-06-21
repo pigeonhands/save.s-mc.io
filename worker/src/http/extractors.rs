@@ -7,13 +7,15 @@ use crate::{
     turnstile,
 };
 
+use super::context::AppState;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CaptchaResponse;
 
-impl FromRequestParts<()> for CaptchaResponse {
+impl FromRequestParts<AppState> for CaptchaResponse {
     type Rejection = crate::error::HttpError;
 
-    async fn from_request_parts(parts: &mut Parts, _: &()) -> HttpResult<Self> {
+    async fn from_request_parts(parts: &mut Parts, _: &AppState) -> HttpResult<Self> {
         if !turnstile::enabled() {
             return Ok(Self);
         }

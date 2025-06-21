@@ -1,20 +1,22 @@
 mod error;
 mod http;
+mod logger;
 mod routes;
 mod turnstile;
 
 use axum::Router;
+use http::context::AppState;
 use tower_service::Service;
 use worker::*;
 
-fn router() -> Router {
+fn router() -> Router<AppState> {
     Router::new().merge(routes::router())
 }
 
 #[event(start)]
 fn start() {
     console_error_panic_hook::set_once();
-    wasm_logger::init(wasm_logger::Config::default());
+    logger::init_with_level(&log::Level::Debug);
 }
 
 #[event(fetch)]
@@ -23,5 +25,8 @@ async fn fetch(
     env: Env,
     _ctx: Context,
 ) -> Result<axum::http::Response<axum::body::Body>> {
-    Ok(router().call(req).await?)
+    Ok(router()
+        .with_state(AppState::from_env(env))
+        .call(req)
+        .await?)
 }

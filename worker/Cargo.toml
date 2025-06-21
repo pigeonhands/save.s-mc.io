@@ -26,7 +26,6 @@ axum = { version = "0.8", default-features = false, features = [
 tower-service = "0.3.3"
 console_error_panic_hook = { version = "0.1.7" }
 serde = { version = "1.0.219", features = ["derive"] }
-wasm-logger = "0.2.0"
 log = "0.4.27"
 thiserror = "2.0.12"
 anyhow = "1.0.98"

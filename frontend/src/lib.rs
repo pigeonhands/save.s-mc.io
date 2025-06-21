@@ -1,3 +1,4 @@
+pub use leptos;
 use leptos::prelude::*;
 use leptos_meta::*;
 use leptos_router::{components::*, path};
@@ -9,6 +10,7 @@ mod providers;
 
 // Top-Level pages
 use crate::pages::home::Home;
+use crate::pages::register::Register;
 use crate::pages::save::Save;
 
 /// An app router which renders the homepage and handles 404's
@@ -31,6 +33,7 @@ pub fn App() -> impl IntoView {
             <Router>
                 <Routes fallback=|| view! { NotFound }>
                     <Route path=path!("/") view=Save />
+                    <Route path=path!("/register") view=Register />
                 </Routes>
             </Router>
         </Layout>
