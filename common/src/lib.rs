@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use struct_iterable::Iterable;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Iterable)]
@@ -19,8 +19,10 @@ pub struct RegisterBeginRequest {
     pub pub_key: String,
 }
 
+pub type PublicKeyCredentialCreationOptions = ();
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RegisterBeginResponse {
-    pub passkey_challenge: passkey_types::webauthn::CredentialCreationOptions,
+    pub passkey_challenge: PublicKeyCredentialCreationOptions,
     pub pgp_channenge: String,
 }

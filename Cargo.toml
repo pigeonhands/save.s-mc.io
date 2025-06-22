@@ -6,10 +6,7 @@ resolver = "2"
 pgp = { version = "0.16.0", features = ["wasm"] }
 gloo-net = "0.6.0"
 struct_iterable = "0.1.1"
-passkey-client = "0.4.0"
-passkey-authenticator = "0.4.0"
-passkey-types = "0.4.0"
-webauthn_rp = "0.3.0"
+webauthn-rs-proto = { version = "0.5.1", features = ["wasm"] }
 
 [profile.release]
 lto = true        # causing build errors

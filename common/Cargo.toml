@@ -6,5 +6,4 @@ edition = "2024"
 [dependencies]
 serde = { version = "1.0.219", features = ["derive"] }
 struct_iterable = { workspace = true }
-passkey-types = { workspace = true }
-webauthn_rp = { workspace = true }
+webauthn-rs-proto = { workspace = true }

@@ -3,11 +3,9 @@ use crate::{
     providers::{api, pgputils},
 };
 
-use gloo::file::BlobContents;
+use common::PublicKeyCredentialCreationOptions;
 use leptos::{prelude::*, task::spawn_local};
-use wasm_bindgen::JsValue;
 use wasm_bindgen_futures::JsFuture;
-use web_sys::js_sys;
 
 #[component]
 pub fn Register() -> impl IntoView {
@@ -28,12 +26,12 @@ pub fn Register() -> impl IntoView {
 
 #[derive(Debug, Clone)]
 pub struct VerifyData {
-    pub passkey: std::sync::Arc<passkey_types::webauthn::CredentialCreationOptions>,
+    pub passkey: std::sync::Arc<PublicKeyCredentialCreationOptions>,
     pub pgp: String,
 }
 
 impl VerifyData {
-    pub fn new(passkey: passkey_types::webauthn::CredentialCreationOptions, pgp: String) -> Self {
+    pub fn new(passkey: PublicKeyCredentialCreationOptions, pgp: String) -> Self {
         Self {
             passkey: std::sync::Arc::new(passkey),
             pgp,
