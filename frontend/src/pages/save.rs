@@ -1,4 +1,5 @@
 use leptos::{
+    html,
     prelude::*,
     reactive::spawn_local,
     server::codee::string::{FromToStringCodec, OptionCodec},
@@ -6,6 +7,7 @@ use leptos::{
 use leptos_use::storage::use_session_storage;
 
 use crate::providers::api;
+use crate::{components, providers::pgputils};
 
 #[component]
 pub fn Save() -> impl IntoView {
@@ -57,6 +59,8 @@ pub fn SaveForm() -> impl IntoView {
     let is_validating = RwSignal::new(false);
     let clear_cache = RwSignal::new(false);
 
+    let (popover_text, set_popover_text) = signal(String::new());
+
     Effect::new(move |_| {
         if let Some(enc_msg) = encrypted_message.get() {
             set_message_display.set(enc_msg);
@@ -70,7 +74,7 @@ pub fn SaveForm() -> impl IntoView {
          description: ReadSignal<String>,
          message: ReadSignal<String>,
          set_encrypted_message: WriteSignal<Option<String>>| {
-            match crate::providers::pgp::encrypt(
+            match pgputils::encrypt(
                 encryption_key,
                 description.get_untracked(),
                 message.get_untracked(),
@@ -132,6 +136,7 @@ pub fn SaveForm() -> impl IntoView {
                     }
                     Err(e) => {
                         log::error!("Failed to get pub_key. {:?}", e);
+                        set_popover_text.set(e.to_string());
                     }
                 };
 
@@ -150,6 +155,7 @@ pub fn SaveForm() -> impl IntoView {
     view! {
             <div class="p-5 flex flex-col items-center h-full" gap-="0">
 
+
                 <div class="grid grid-cols-2 justify-between">
                     <div box-="round" shear-="top" class:invalid-input={move || !is_valid(email)}>
                         <span class="box-title">Email</span>
@@ -163,6 +169,8 @@ pub fn SaveForm() -> impl IntoView {
                             required
                         />
                     </div>
+
+                    <components::popover::Popover text={popover_text} />
 
                     <div box-="round" shear-="top" class:invalid-input={move || !is_valid(description)}>
                         <span class="box-title">Description</span>

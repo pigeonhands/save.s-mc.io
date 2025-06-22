@@ -1,18 +1,15 @@
+mod register;
 mod save;
 
 use crate::http::context::AppState;
-use axum::{
-    Router,
-    body::Body as AxumBody,
-    extract::{FromRef, Path, RawQuery, State},
-    response::{IntoResponse, Response},
-    routing::{get, post},
-};
+use axum::Router;
 
 pub fn router() -> Router<AppState> {
     Router::new().nest("/api", api())
 }
 
 pub fn api() -> Router<AppState> {
-    Router::new().nest("/save", save::router())
+    Router::new()
+        .nest("/save", save::router())
+        .nest("/register", register::router())
 }

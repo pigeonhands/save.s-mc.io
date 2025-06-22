@@ -46,20 +46,25 @@ build-release:
 
 .PHONY: dev
 dev:
-	npx wrangler dev --env dev --log-level info
+	TURNSTILE_SITE_KEY="1x00000000000000000000AA" \
+		npx wrangler dev --env dev --log-level info
 
 .PHONY: deploy
 deploy:
-	URNSTILE_PRIVATE_KEY="1x0000000000000000000000000000000AA" \
-		TURNSTILE_SITE_KEY="1x00000000000000000000AA" \
-	npx wrangler deploy
+	TURNSTILE_SITE_KEY="0x4AAAAAABhnwL7sYFxsO_bQ" \
+		npx wrangler deploy
 
 .PHONY: d1-exec
-d1-exec:
-	npx wrangler d1 execute save --local --env dev --file=./worker/schema.sql
+d1-migrate:
+	npx wrangler d1 migrations apply save --local --env dev
 
 .PHONY: d1-query
+d1-query:
 	npx wrangler d1 execute --env dev save --local --command="$(query)"
+
+.PHONY: d1-migration-add
+d1-migration-add:
+	npx wrangler d1 migrations create save $(name)
 
 .PHONY: get-tui-component
 get-tui-component:

@@ -15,10 +15,14 @@ pub struct CaptchaResponse;
 impl FromRequestParts<AppState> for CaptchaResponse {
     type Rejection = crate::error::HttpError;
 
-    async fn from_request_parts(parts: &mut Parts, _: &AppState) -> HttpResult<Self> {
-        if !turnstile::enabled() {
-            return Ok(Self);
-        }
+    async fn from_request_parts(parts: &mut Parts, state: &AppState) -> HttpResult<Self> {
+        let turnstile_key = match state.turnstile_private_key() {
+            Some(key) => key,
+            None => {
+                log::warn!("turnstile is disabled");
+                return Ok(Self);
+            }
+        };
 
         let auth_header = parts
             .headers
@@ -30,7 +34,7 @@ impl FromRequestParts<AppState> for CaptchaResponse {
             HttpError::BadCaptcha
         })?;
 
-        turnstile::validate(captcha_response.into()).await?;
+        turnstile::validate(captcha_response.into(), turnstile_key).await?;
 
         Ok(Self)
     }

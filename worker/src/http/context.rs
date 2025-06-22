@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use axum::extract::FromRef;
+use axum::{extract::FromRef, http::Uri};
 use worker::{D1Database, Env, send::SendWrapper};
 
 type WrappedState<T> = Arc<SendWrapper<T>>;
@@ -10,11 +10,24 @@ pub struct InnerContext {
 }
 
 #[derive(Clone)]
-pub struct AppState(WrappedState<Env>);
+pub struct AppState {
+    pub env: WrappedState<Env>,
+    pub uri: Uri,
+}
 
 impl AppState {
-    pub fn from_env(env: Env) -> Self {
-        Self(Arc::new(SendWrapper::new(env)))
+    pub fn from_env(env: Env, request: &worker::HttpRequest) -> Self {
+        Self {
+            env: Arc::new(SendWrapper::new(env)),
+            uri: request.uri().clone(),
+        }
+    }
+
+    pub fn turnstile_private_key(&self) -> Option<String> {
+        self.env
+            .var("TURNSTILE_PRIVATE_KEY")
+            .map(|var| var.to_string())
+            .ok()
     }
 }
 
@@ -22,7 +35,7 @@ pub struct DbCtx(SendWrapper<D1Database>);
 
 impl FromRef<AppState> for DbCtx {
     fn from_ref(input: &AppState) -> Self {
-        let db = input.0.d1("DB").expect("Cant get db binding");
+        let db = input.env.d1("DB").expect("Cant get db binding");
 
         Self(SendWrapper::new(db))
     }

@@ -1,2 +1,2 @@
 pub mod api;
-pub mod pgp;
+pub mod pgputils;

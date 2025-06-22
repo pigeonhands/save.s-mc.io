@@ -30,3 +30,5 @@ build.watch_dir = ["./frontend/src/", "./worker/src/"]
 binding = "DB"
 database_name = "save"
 database_id = "dev"
+
+[env.dev.vars]

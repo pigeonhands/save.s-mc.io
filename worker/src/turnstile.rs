@@ -15,21 +15,9 @@ pub struct ResponseData {
     pub success: bool,
 }
 
-pub fn enabled() -> bool {
-    TURNSTILE_PRIVATE_KEY.is_some()
-}
-
-pub async fn validate(response: String) -> Result<(), HttpError> {
-    let key = match TURNSTILE_PRIVATE_KEY {
-        Some(key) => key,
-        None => {
-            log::warn!("Captcha verification disabled");
-            return Ok(());
-        }
-    };
-
+pub async fn validate(response: String, private_key: String) -> Result<(), HttpError> {
     let pl = RequestParams {
-        secret: key.into(),
+        secret: private_key,
         response: response.into(),
     };
 

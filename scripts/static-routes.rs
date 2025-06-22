@@ -10,6 +10,8 @@ fn main() {
     let dist = std::path::Path::new("./dist/assets/");
     let index = dist.join("index.html");
 
+    std::fs::copy(&index, dist.join("404.html"));
+
     let routes = leptos_axum::generate_route_list(frontend::App);
     for route in routes {
         let stripped = route.path().strip_prefix("/").unwrap();
