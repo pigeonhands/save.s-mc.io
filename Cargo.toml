@@ -1,0 +1,15 @@
+[workspace]
+members = ["./common", "./frontend", "./worker"]
+resolver = "2"
+
+[workspace.dependencies]
+pgp = { version = "0.16.0", features = ["wasm"] }
+gloo-net = "0.6.0"
+struct_iterable = "0.1.1"
+passkey-types = "0.4.0"
+
+[profile.release]
+lto = true        # causing build errors
+codegen-units = 1 # causing build errors
+# strip = true # causing build errors
+opt-level = 'z'

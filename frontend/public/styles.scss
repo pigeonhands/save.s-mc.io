@@ -1,0 +1,27 @@
+@layer theme, base, components, utilities;
+
+@import "./static/css/webtui/style.css";
+
+[box-]::before {
+  --box-border-color: var(--surface1);
+}
+
+[box-].invalid-input::before {
+  --box-border-color: var(--red);
+}
+
+.header { 
+    display: flex;
+    justify-content: space-between; 
+}
+
+.box-title {
+    background-color: var(--background0);
+    padding: 0 1ch;
+    margin: 0 2ch;
+}
+
+a.link {
+  text-decoration: underline;
+}
+
