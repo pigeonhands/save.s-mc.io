@@ -15,6 +15,7 @@ wasm-opt = false
 crate-type = ["cdylib"]
 
 [dependencies]
+passkey-types.workspace = true
 common = { path = "../common", version = "*" }
 worker = { version = "0.6.0", features = ['http', 'axum', 'd1'] }
 worker-macros = { version = "0.6.0", features = ['http'] }
@@ -33,3 +34,9 @@ reqwest = { version = "0.12.20", features = ["json", "blocking"] }
 coset = "0.3.8"
 async-trait = "0.1.88"
 serde_json = "1.0.140"
+getrandom = { version = "0.3.4", features = ["wasm_js"] }
+uuid = { version = "1.19.0", features = ["js", "v4"] }
+ciborium = { version = "0.2.2", default-features = false }
+serde_bytes = { version = "0.11.19", default-features = false, features = [
+    "alloc",
+] }

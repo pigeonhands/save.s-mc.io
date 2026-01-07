@@ -29,9 +29,9 @@ pub async fn register_begin(
     _captcha: CaptchaResponse,
     req: Json<RegisterBeginRequest>,
 ) -> HttpResult<impl IntoResponse> {
-    let passkey_challenge = passkey.start_register(&req.email)?;
+    let (options, challenge) = passkey.register_start(&req.email)?;
     Ok(Json(RegisterBeginResponse {
-        passkey_challenge,
+        passkey_challenge: options,
         pgp_channenge: String::new(),
     }))
 }

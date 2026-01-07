@@ -22,6 +22,10 @@ binding = "DB"
 database_name = "save"
 database_id = "f4cee059-9c5f-4143-b972-8faf6bd0c3f7"
 
+[[kv_namespaces]]
+binding = "save"
+id = "07ab9d92ad2f45ea8d8662218e310c07"
+
 [env.dev]
 build.command = "make build"
 build.watch_dir = ["./frontend/src/", "./worker/src/"]
@@ -30,5 +34,11 @@ build.watch_dir = ["./frontend/src/", "./worker/src/"]
 binding = "DB"
 database_name = "save"
 database_id = "dev"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "save"
+preview_id = "dev"
+
 
 [env.dev.vars]

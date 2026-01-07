@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::{extract::FromRef, http::Uri};
-use worker::{D1Database, Env, send::SendWrapper};
+use worker::{D1Database, Env, kv::KvStore, send::SendWrapper};
 
 type WrappedState<T> = Arc<SendWrapper<T>>;
 
@@ -48,6 +48,28 @@ impl AsRef<D1Database> for DbCtx {
 
 impl std::ops::Deref for DbCtx {
     type Target = D1Database;
+
+    fn deref(&self) -> &Self::Target {
+        self.as_ref()
+    }
+}
+pub struct KvCtx(SendWrapper<KvStore>);
+
+impl FromRef<AppState> for KvCtx {
+    fn from_ref(input: &AppState) -> Self {
+        let db = input.env.kv("KV").expect("Cant get kv binding");
+
+        Self(SendWrapper::new(db))
+    }
+}
+impl AsRef<KvStore> for KvCtx {
+    fn as_ref(&self) -> &KvStore {
+        &self.0
+    }
+}
+
+impl std::ops::Deref for KvCtx {
+    type Target = KvStore;
 
     fn deref(&self) -> &Self::Target {
         self.as_ref()
