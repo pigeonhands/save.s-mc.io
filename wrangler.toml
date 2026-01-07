@@ -23,7 +23,7 @@ database_name = "save"
 database_id = "f4cee059-9c5f-4143-b972-8faf6bd0c3f7"
 
 [[kv_namespaces]]
-binding = "save"
+binding = "KV"
 id = "07ab9d92ad2f45ea8d8662218e310c07"
 
 [env.dev]
@@ -34,8 +34,9 @@ build.watch_dir = ["./frontend/src/", "./worker/src/"]
 binding = "DB"
 database_name = "save"
 database_id = "dev"
+preview_database_id = "dev"
 
-[[kv_namespaces]]
+[[env.dev.kv_namespaces]]
 binding = "KV"
 id = "save"
 preview_id = "dev"

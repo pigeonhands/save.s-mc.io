@@ -35,35 +35,19 @@ use log::{Level, Metadata, Record, set_max_level};
 use worker::{Date, console_debug, console_error, console_log, console_warn};
 use worker::{Env as WorkerEnv, Error as WorkerError};
 
-#[cfg(feature = "env_logger_string")]
-use env_logger::filter::{Builder, Filter};
-
-#[cfg(feature = "env_logger_string")]
-use log::set_boxed_logger;
-
-#[cfg(not(feature = "env_logger_string"))]
 use log::set_logger;
 
-#[cfg(not(feature = "env_logger_string"))]
 use std::str::FromStr;
 
-#[cfg(feature = "color")]
-use colored::Colorize;
-
-#[cfg(not(feature = "env_logger_string"))]
 static WORKER_LOGGER: Logger = Logger {};
 
 /// Main logger struct
 #[derive(Debug)]
-pub struct Logger {
-    #[cfg(feature = "env_logger_string")]
-    filter: Filter,
-}
+pub struct Logger {}
 
 impl Logger {
     /// Initialize the logger with a string
     pub fn new<S: AsRef<str>>(init_string: S) -> Self {
-        #[cfg(not(feature = "env_logger_string"))]
         {
             let level = Level::from_str(init_string.as_ref());
             if let Err(ref e) = level {
@@ -71,25 +55,9 @@ impl Logger {
             }
             set_max_level(level.unwrap_or(Level::Info).to_level_filter());
         }
-        #[cfg(feature = "color")]
-        colored::control::set_override(true);
-        Logger {
-            #[cfg(feature = "env_logger_string")]
-            filter: Builder::new().parse(init_string.as_ref()).build(),
-        }
+        Logger {}
     }
 
-    #[cfg(feature = "env_logger_string")]
-    /// Set the logger instance as the main logger
-    pub fn set_logger(self) {
-        set_max_level(self.filter.filter());
-        let result = set_boxed_logger(Box::new(self));
-        if let Err(e) = result {
-            console_error!("Logger installation failed: {}", e);
-        }
-    }
-
-    #[cfg(not(feature = "env_logger_string"))]
     /// Set the logger instance as the main logger
     pub fn set_logger(self) {
         let result = set_logger(&WORKER_LOGGER);
@@ -100,22 +68,11 @@ impl Logger {
 }
 
 impl log::Log for Logger {
-    #[cfg(feature = "env_logger_string")]
-    fn enabled(&self, metadata: &Metadata) -> bool {
-        self.filter.enabled(metadata)
-    }
-
-    #[cfg(not(feature = "env_logger_string"))]
     fn enabled(&self, metadata: &Metadata) -> bool {
         metadata.level() <= log::max_level()
     }
 
     fn log(&self, record: &Record) {
-        #[cfg(feature = "env_logger_string")]
-        if !self.filter.matches(record) {
-            return;
-        }
-        #[cfg(not(feature = "env_logger_string"))]
         if !self.enabled(record.metadata()) {
             return;
         }
@@ -124,22 +81,12 @@ impl log::Log for Logger {
             _ => record.target().to_string(),
         };
         let level = record.level().to_string();
-        #[cfg(feature = "color")]
-        let level = match record.level() {
-            Level::Error => level.red(),
-            Level::Warn => level.yellow(),
-            Level::Info => level.cyan(),
-            Level::Debug => level.purple(),
-            _ => level.normal(),
-        };
         let prompt = format!(
             "[{time} {level} {target}]",
             time = Date::now().to_string(),
             level = level,
             target = target,
         );
-        #[cfg(feature = "color")]
-        let prompt = prompt.bold();
         match record.level() {
             Level::Debug => console_debug!("{} {}", prompt, record.args()),
             Level::Error => console_error!("{} {}", prompt, record.args()),

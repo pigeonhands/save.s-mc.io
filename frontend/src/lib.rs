@@ -1,3 +1,4 @@
+#![recursion_limit = "512"]
 pub use leptos;
 use leptos::prelude::*;
 use leptos_meta::*;

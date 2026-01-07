@@ -21,7 +21,7 @@
     toSystem {
 
       devShells.default = pkgs.mkShell {
-        name = "rentscoop-api";
+        name = "save";
 
         buildInputs = with pkgs; [
           rustup

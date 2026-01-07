@@ -558,7 +558,6 @@ dependencies = [
  "passkey-types",
  "serde",
  "struct_iterable",
- "webauthn-rs-proto",
 ]
 
 [[package]]
@@ -1244,6 +1243,7 @@ dependencies = [
  "leptos_meta",
  "leptos_router",
  "log",
+ "passkey-types",
  "pgp",
  "rand",
  "serde",
