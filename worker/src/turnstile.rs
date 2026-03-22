@@ -13,6 +13,8 @@ struct RequestParams {
 #[derive(Serialize, Deserialize)]
 pub struct ResponseData {
     pub success: bool,
+    #[serde(rename = "error-codes", default)]
+    pub error_codes: Vec<String>,
 }
 
 pub async fn validate(response: String, private_key: String) -> Result<(), HttpError> {
@@ -34,6 +36,7 @@ pub async fn validate(response: String, private_key: String) -> Result<(), HttpE
     if resp.success {
         Ok(())
     } else {
+        log::warn!("Turnstile rejected token: {:?}", resp.error_codes);
         Err(HttpError::BadCaptcha)
     }
 }

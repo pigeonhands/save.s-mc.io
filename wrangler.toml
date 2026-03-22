@@ -7,7 +7,7 @@ compatibility_date = "2025-06-20"
 # ]
 
 [build]
-command = "make build release=1"
+command = "TURNSTILE_SITE_KEY=\"0x4AAAAAABhnwL7sYFxsO_bQ\" make build release=1"
 watch_dir = ["./frontend/src/", "./worker/src/"]
 
 [assets]

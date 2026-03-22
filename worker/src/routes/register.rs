@@ -97,7 +97,6 @@ pub async fn register_finish(
     State(passkey): State<PasskeyCtx>,
     State(kv): State<KvCtx>,
     State(db): State<DbCtx>,
-    _captcha: CaptchaResponse,
     req: Json<RegisterFinishRequest>,
 ) -> HttpResult<impl IntoResponse> {
     let kv_key = format!("register:{}", req.email);
