@@ -1,5 +1,7 @@
 use base64::Engine;
 use common::{RegisterBeginRequest, RegisterBeginResponse, RegisterFinishRequest, RegisterFinishResponse};
+use pgp::composed::{Deserializable, SignedPublicKey};
+use pgp::types::{KeyDetails, PublicKeyTrait};
 use serde::{Deserialize, Serialize};
 use worker::send::{SendFuture, SendWrapper};
 
@@ -19,6 +21,27 @@ use axum::{
 };
 
 const CHALLENGE_TTL_SECS: u64 = 300;
+
+/// Find the encryption subkey whose fingerprint matches `fingerprint_hex` and
+/// return its 8-byte key ID as a lowercase hex string.
+fn encryption_key_id(pub_key_armor: &str, fingerprint_hex: &str) -> anyhow::Result<String> {
+    let (key, _) = SignedPublicKey::from_string(pub_key_armor)?;
+    for subkey in &key.public_subkeys {
+        if subkey.is_encryption_key()
+            && format!("{}", subkey.fingerprint()) == fingerprint_hex
+        {
+            return Ok(format!("{}", subkey.key_id()));
+        }
+    }
+    // Fall back to the first encryption subkey if fingerprint doesn't match
+    // (handles edge cases where the fingerprint format differs slightly).
+    for subkey in &key.public_subkeys {
+        if subkey.is_encryption_key() {
+            return Ok(format!("{}", subkey.key_id()));
+        }
+    }
+    anyhow::bail!("no encryption subkey found in public key")
+}
 
 #[derive(Serialize, Deserialize)]
 struct RegisterSession {
@@ -93,14 +116,12 @@ pub async fn register_finish(
     let cose_key_b64 = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(&cose_key_bytes);
     let credential_id = req.credential.id.clone();
 
-    // Delete the used challenge
     SendFuture::new(kv.delete(&kv_key))
         .await
         .map_err(worker::Error::from)?;
 
     let user_id = uuid::Uuid::new_v4().to_string();
 
-    // Insert user
     let insert_user = SendWrapper::new(
         db.prepare("INSERT INTO users (user_id, email) VALUES (?, ?)")
             .bind(&[user_id.clone().into(), req.email.clone().into()])?,
@@ -109,16 +130,17 @@ pub async fn register_finish(
         .await
         .map_err(|e| anyhow::anyhow!("failed to insert user: {e:?}"))?;
 
-    // Insert PGP key
+    let enc_key_id = encryption_key_id(&session.pub_key, &session.encryption_key)
+        .map_err(|e| anyhow::anyhow!("failed to extract encryption key id: {e}"))?;
     let insert_key = SendWrapper::new(
-        db.prepare("INSERT INTO keys (user_id, public_key) VALUES (?, ?)")
-            .bind(&[user_id.clone().into(), session.pub_key.into()])?,
+        db.prepare("INSERT INTO keys (user_id, public_key, encryption_key_id) VALUES (?, ?, ?)")
+            .bind(&[user_id.clone().into(), session.pub_key.into(), enc_key_id.into(),
+            ])?,
     );
     SendFuture::new(insert_key.run())
         .await
         .map_err(|e| anyhow::anyhow!("failed to insert key: {e:?}"))?;
 
-    // Insert passkey credential
     let insert_cred = SendWrapper::new(
         db.prepare(
             "INSERT INTO passkey_credentials (credential_id, user_id, cose_public_key) VALUES (?, ?, ?)",

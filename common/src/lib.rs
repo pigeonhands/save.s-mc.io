@@ -37,8 +37,6 @@ pub struct RegisterFinishRequest {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RegisterFinishResponse {}
 
-// Authentication
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AuthBeginRequest {
     pub email: String,
@@ -69,7 +67,15 @@ pub struct AuthFinishResponse {
     pub session_token: String,
 }
 
-// Read
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SaveTextRequest {
+    pub description: String,
+    pub message: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SaveTextResponse {}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SavedItem {

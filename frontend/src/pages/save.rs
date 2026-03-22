@@ -48,6 +48,7 @@ pub fn SaveForm() -> impl IntoView {
     let (last_email_saved, set_last_email_saved, _) =
         use_session_storage::<String, FromToStringCodec>(format!("settings:last-email"));
 
+
     let (email, set_email) = signal(last_email_saved.get_untracked());
     let (description, set_description) = signal(String::new());
     let (message, set_message) = signal(String::new());
@@ -145,9 +146,26 @@ pub fn SaveForm() -> impl IntoView {
         }
     };
 
+    let (saving, set_saving) = signal(false);
+
     let on_save = move |_| {
-        //
-        // TODO
+        let desc = description.get_untracked();
+        let msg = encrypted_message.get_untracked().unwrap_or_default();
+        set_saving.set(true);
+        spawn_local(async move {
+            match api::save_item(desc, msg).await {
+                Ok(_) => {
+                    set_encrypted_message.set(None);
+                    set_description.set(String::new());
+                    set_message.set(String::new());
+                    set_popover_text.set("Saved!".into());
+                }
+                Err(e) => {
+                    set_popover_text.set(format!("Save failed: {e}"));
+                }
+            }
+            set_saving.set(false);
+        });
     };
 
     let is_valid = move |input: ReadSignal<String>| !is_validating.get() || !input.get().is_empty();
@@ -224,12 +242,13 @@ pub fn SaveForm() -> impl IntoView {
 
                     <button
                         on:click={on_save}
+                        prop:disabled={move || saving.get()}
                         variant-="foreground1"
                         id="login-button"
                         type="button"
                         class="m-[0_1ch]"
                     >
-                        Save
+                        {move || if saving.get() { "Saving..." } else { "Save" }}
                     </button>
 
                 </div>

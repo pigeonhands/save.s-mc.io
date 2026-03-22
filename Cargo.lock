@@ -3449,6 +3449,7 @@ dependencies = [
  "log",
  "p256",
  "passkey-types",
+ "pgp",
  "reqwest",
  "serde",
  "serde_bytes",

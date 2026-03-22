@@ -1,6 +1,8 @@
 use crate::{components, providers::api};
 
 use common::{AssertionResponse, SavedItem};
+use leptos_use::storage::use_session_storage;
+use leptos::server::codee::string::FromToStringCodec;
 use leptos::{prelude::*, task::spawn_local};
 use wasm_bindgen_futures::JsFuture;
 
@@ -48,9 +50,29 @@ fn ReadPage() -> impl IntoView {
 
 #[component]
 fn LoginForm(set_state: WriteSignal<PageState>) -> impl IntoView {
+    let (session_token, set_session_token, _) =
+        use_session_storage::<String, FromToStringCodec>("session_token");
+
     let (email, set_email) = signal(String::new());
     let (popover_text, set_popover_text) = signal(String::new());
     let (loading, set_loading) = signal(false);
+
+    // If we already have a session token, skip to items
+    Effect::new(move |_| {
+        let token = session_token.get();
+        if !token.is_empty() {
+            set_loading.set(true);
+            spawn_local(async move {
+                match api::read_items(&token).await {
+                    Ok(resp) => set_state.set(PageState::ShowingItems(resp.items)),
+                    Err(_) => {
+                        set_session_token.set(String::new());
+                        set_loading.set(false);
+                    }
+                }
+            });
+        }
+    });
 
     let on_login = move |_| {
         let email_val = email.get_untracked();
@@ -108,17 +130,18 @@ fn LoginForm(set_state: WriteSignal<PageState>) -> impl IntoView {
 
                 // Step 3: auth finish
                 let finish_resp = api::auth_finish(email_val, assertion).await?;
-                let session_token = finish_resp.session_token;
+                let token = finish_resp.session_token;
 
                 // Step 4: fetch items
-                let items_resp = api::read_items(&session_token).await?;
+                let items_resp = api::read_items(&token).await?;
 
-                anyhow::Ok(items_resp.items)
+                anyhow::Ok((token, items_resp.items))
             }
             .await;
 
             match result {
-                Ok(items) => {
+                Ok((token, items)) => {
+                    set_session_token.set(token);
                     set_state.set(PageState::ShowingItems(items));
                 }
                 Err(e) => {

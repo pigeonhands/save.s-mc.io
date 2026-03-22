@@ -3,6 +3,7 @@ use common::{
     AssertionResponse, AuthBeginRequest, AuthBeginResponse, AuthFinishRequest, AuthFinishResponse,
     PublicKeyRequest, PublicKeyResponse, ReadItemsResponse, RegisterBeginRequest,
     RegisterBeginResponse, RegisterFinishRequest, RegisterFinishResponse, RegisterPublicKeyCredential,
+    SaveTextRequest, SaveTextResponse,
 };
 use gloo::net::http::{Request, RequestBuilder};
 use struct_iterable::Iterable;
@@ -160,6 +161,22 @@ pub async fn auth_finish(
 
     if resp.status() != 200 {
         anyhow::bail!("Auth finish failed ({}): {}", resp.status(), resp.status_text());
+    }
+
+    Ok(resp.json().await?)
+}
+
+pub async fn save_item(
+    description: String,
+    message: String,
+) -> anyhow::Result<SaveTextResponse> {
+    let resp = post("/api/save/item")
+        .json(&SaveTextRequest { description, message })?
+        .send()
+        .await?;
+
+    if resp.status() != 200 {
+        anyhow::bail!("Failed to save item ({}): {}", resp.status(), resp.status_text());
     }
 
     Ok(resp.json().await?)
