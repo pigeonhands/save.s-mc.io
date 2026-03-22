@@ -26,51 +26,33 @@ where
 
 fn get(url: &str) -> RequestBuilder {
     let builder = Request::get(url);
-
-    let builder = if let Some(token) = turnstile::response().as_deref() {
+    if let Some(token) = turnstile::response().as_deref() {
         builder.header("Captcha-Response", token)
     } else {
         builder
-    };
-    builder
+    }
 }
 
 fn post(url: &str) -> RequestBuilder {
     let builder = Request::post(url);
-
-    let builder = if let Some(token) = turnstile::response().as_deref() {
+    if let Some(token) = turnstile::response().as_deref() {
         builder.header("Captcha-Response", token)
     } else {
         builder
-    };
-    builder
+    }
 }
 
 pub async fn get_public_key(email: String) -> anyhow::Result<PublicKeyResponse> {
-    let _test = PublicKeyRequest {
-        email: email.clone(),
-    };
-
     let resp = get("/api/save/public-key")
-        .query(
-            PublicKeyRequest {
-                email: email.clone(),
-            }
-            .to_request_params(),
-        )
+        .query(PublicKeyRequest { email: email.clone() }.to_request_params())
         .send()
         .await?;
 
     if resp.status() == 404 {
         bail!("Public key for email '{}' not found", email);
     }
-
     if resp.status() != 200 {
-        bail!(
-            "Failed to get pub key ({}). Api returned {}",
-            resp.status_text(),
-            resp.status()
-        );
+        bail!("Failed to get pub key ({}). Api returned {}", resp.status_text(), resp.status());
     }
 
     Ok(resp.json().await?)
@@ -82,24 +64,15 @@ pub async fn begin_registration(
     pub_key: String,
 ) -> anyhow::Result<RegisterBeginResponse> {
     let resp = post("/api/register/begin")
-        .json(&RegisterBeginRequest {
-            email,
-            encryption_key,
-            pub_key,
-        })?
+        .json(&RegisterBeginRequest { email, encryption_key, pub_key })?
         .send()
         .await?;
 
     if resp.status() == 404 {
         bail!("Public key for email not found");
     }
-
     if resp.status() != 200 {
-        bail!(
-            "Failed to begin registration ({}): {}",
-            resp.status(),
-            resp.status_text()
-        );
+        bail!("Failed to begin registration ({}): {}", resp.status(), resp.status_text());
     }
 
     Ok(resp.json().await?)
@@ -117,13 +90,8 @@ pub async fn finish_registration(
     if resp.status() == 401 {
         anyhow::bail!("Registration session expired. Please start over.");
     }
-
     if resp.status() != 200 {
-        anyhow::bail!(
-            "Registration failed ({}): {}",
-            resp.status(),
-            resp.status_text()
-        );
+        anyhow::bail!("Registration failed ({}): {}", resp.status(), resp.status_text());
     }
 
     Ok(resp.json().await?)
@@ -138,7 +106,6 @@ pub async fn auth_begin(email: String) -> anyhow::Result<AuthBeginResponse> {
     if resp.status() == 401 {
         anyhow::bail!("No registered security key found for this email.");
     }
-
     if resp.status() != 200 {
         anyhow::bail!("Auth begin failed ({}): {}", resp.status(), resp.status_text());
     }
@@ -158,7 +125,6 @@ pub async fn auth_finish(
     if resp.status() == 401 {
         anyhow::bail!("Authentication failed. Wrong security key or expired session.");
     }
-
     if resp.status() != 200 {
         anyhow::bail!("Auth finish failed ({}): {}", resp.status(), resp.status_text());
     }
@@ -166,10 +132,7 @@ pub async fn auth_finish(
     Ok(resp.json().await?)
 }
 
-pub async fn save_item(
-    description: String,
-    message: String,
-) -> anyhow::Result<SaveTextResponse> {
+pub async fn save_item(description: String, message: String) -> anyhow::Result<SaveTextResponse> {
     let resp = post("/api/save/item")
         .json(&SaveTextRequest { description, message })?
         .send()
@@ -191,10 +154,25 @@ pub async fn read_items(session_token: &str) -> anyhow::Result<ReadItemsResponse
     if resp.status() == 401 {
         anyhow::bail!("Session expired. Please log in again.");
     }
-
     if resp.status() != 200 {
         anyhow::bail!("Failed to load items ({}): {}", resp.status(), resp.status_text());
     }
 
     Ok(resp.json().await?)
+}
+
+pub async fn delete_item(session_token: &str, saved_id: &str) -> anyhow::Result<()> {
+    let resp = Request::delete(&format!("/api/read/item/{saved_id}"))
+        .header("Authorization", &format!("Bearer {session_token}"))
+        .send()
+        .await?;
+
+    if resp.status() == 401 {
+        anyhow::bail!("Session expired. Please log in again.");
+    }
+    if resp.status() != 200 {
+        anyhow::bail!("Failed to delete item ({}): {}", resp.status(), resp.status_text());
+    }
+
+    Ok(())
 }

@@ -1,7 +1,5 @@
--- Migration number: 0002 	 2025-06-21T21:32:50.414Z
-
 CREATE TABLE saved (
-    saved_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    saved_id TEXT PRIMARY KEY,
     user_id TEXT,
     data_type TEXT NOT NULL,
     description TEXT NOT NULL,
@@ -13,7 +11,7 @@ CREATE TABLE saved (
     ) VIRTUAL,
 
     FOREIGN KEY(user_id) REFERENCES users(user_id)
-        ON DELETE SET NULL, -- no cascade so files can be cleaned up
+        ON DELETE SET NULL,
 
     CHECK (data_type in ('text', 'file'))
 );
@@ -21,7 +19,7 @@ CREATE TABLE saved (
 CREATE INDEX idx_saved_data_user_id ON saved (user_id);
 
 CREATE TABLE saved_text (
-    saved_id INTEGER PRIMARY KEY,
+    saved_id TEXT PRIMARY KEY,
 
     message TEXT NOT NULL,
 
@@ -29,7 +27,7 @@ CREATE TABLE saved_text (
 );
 
 CREATE TABLE saved_file (
-    saved_id INTEGER PRIMARY KEY,
+    saved_id TEXT PRIMARY KEY,
 
     file_hash TEXT NOT NULL,
 

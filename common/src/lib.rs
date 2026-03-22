@@ -79,7 +79,7 @@ pub struct SaveTextResponse {}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SavedItem {
-    pub saved_id: i32,
+    pub saved_id: String,
     pub description: String,
     pub data_type: String,
     pub created_at: String,

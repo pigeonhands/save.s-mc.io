@@ -2,36 +2,25 @@ use common::{ReadItemsResponse, SavedItem};
 use worker::send::{SendFuture, SendWrapper};
 
 use crate::{
-    error::{HttpError, HttpResult},
-    http::context::{AppState, DbCtx, KvCtx},
+    error::HttpResult,
+    http::{
+        context::{AppState, DbCtx},
+        extractors::SessionUser,
+    },
 };
-use axum::{Router, extract::State, http::Request, response::IntoResponse, routing::get};
-use axum::Json;
-use axum::body::Body;
+use axum::{Json, Router, extract::{Path, State}, response::IntoResponse, routing::{delete, get}};
 
 pub fn router() -> Router<AppState> {
-    Router::new().route("/items", get(read_items))
+    Router::new()
+        .route("/items", get(read_items))
+        .route("/item/{id}", delete(delete_item))
 }
 
 #[axum::debug_handler(state=AppState)]
 pub async fn read_items(
-    State(kv): State<KvCtx>,
+    session: SessionUser,
     State(db): State<DbCtx>,
-    req: Request<Body>,
 ) -> HttpResult<impl IntoResponse> {
-    let token = req
-        .headers()
-        .get("Authorization")
-        .and_then(|h| h.to_str().ok())
-        .and_then(|s| s.strip_prefix("Bearer "))
-        .ok_or(HttpError::Unauthorized)?
-        .to_string();
-
-    let user_id: String = SendFuture::new(kv.get(&format!("session:{token}")).text())
-        .await
-        .map_err(worker::Error::from)?
-        .ok_or(HttpError::Unauthorized)?;
-
     let stmt = SendWrapper::new(
         db.prepare(
             "SELECT s.saved_id, s.description, s.data_type, s.created_at, st.message
@@ -40,7 +29,7 @@ pub async fn read_items(
              WHERE s.user_id = ?
              ORDER BY s.created_at DESC",
         )
-        .bind(&[user_id.into()])?,
+        .bind(&[session.user_id.into()])?,
     );
 
     let result = SendFuture::new(stmt.all())
@@ -52,4 +41,29 @@ pub async fn read_items(
         .map_err(|e| anyhow::anyhow!("Deserialize error: {e:?}"))?;
 
     Ok(Json(ReadItemsResponse { items }))
+}
+
+#[axum::debug_handler(state=AppState)]
+pub async fn delete_item(
+    session: SessionUser,
+    State(db): State<DbCtx>,
+    Path(saved_id): Path<String>,
+) -> HttpResult<impl IntoResponse> {
+    SendFuture::new(SendWrapper::new(
+        db.prepare(
+            "DELETE FROM saved_text WHERE saved_id = (SELECT saved_id FROM saved WHERE saved_id = ? AND user_id = ?)",
+        )
+        .bind(&[saved_id.clone().into(), session.user_id.clone().into()])?,
+    ).run())
+    .await
+    .map_err(|e| anyhow::anyhow!("DB error: {e:?}"))?;
+
+    SendFuture::new(SendWrapper::new(
+        db.prepare("DELETE FROM saved WHERE saved_id = ? AND user_id = ?")
+            .bind(&[saved_id.into(), session.user_id.into()])?,
+    ).run())
+    .await
+    .map_err(|e| anyhow::anyhow!("DB error: {e:?}"))?;
+
+    Ok(Json(()))
 }

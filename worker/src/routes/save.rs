@@ -110,15 +110,14 @@ pub async fn save_item(
     let user_id =
         user_id.ok_or_else(|| anyhow::anyhow!("message not encrypted to any registered key"))?;
 
-    let insert_saved = SendWrapper::new(
-        db.prepare(
-            "INSERT INTO saved (user_id, data_type, description) VALUES (?, 'text', ?) RETURNING saved_id",
-        )
-        .bind(&[user_id.into(), payload.description.into()])?,
-    );
-    let saved_id: i32 = SendFuture::new(insert_saved.first(Some("saved_id")))
-        .await?
-        .ok_or_else(|| anyhow::anyhow!("no saved_id returned"))?;
+    let saved_id = uuid::Uuid::new_v4().to_string();
+
+    SendFuture::new(SendWrapper::new(
+        db.prepare("INSERT INTO saved (saved_id, user_id, data_type, description) VALUES (?, ?, 'text', ?)")
+            .bind(&[saved_id.clone().into(), user_id.into(), payload.description.into()])?,
+    ).run())
+    .await
+    .map_err(|e| anyhow::anyhow!("failed to insert saved: {e:?}"))?;
 
     let insert_text = SendWrapper::new(
         db.prepare("INSERT INTO saved_text (saved_id, message) VALUES (?, ?)")
