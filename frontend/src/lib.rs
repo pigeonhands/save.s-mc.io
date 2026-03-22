@@ -88,7 +88,7 @@ pub fn Layout(children: Children) -> impl IntoView {
                             <></>
                         }.into_any() }
                     }
-                    <a href="mailto:contact@s-mc.io">{ "contact@s-mc.io" }</a><span class="mx-2">{ "-" }</span><a href="/pgp.txt">{ "pgp" }</a>
+                    <a href="mailto:contact@s-mc.io">{ "contact@s-mc.io" }</a><span class="mx-2">{ "-" }</span><a href="/pgp.txt" rel="external">{ "pgp" }</a>
                 </span>
             </footer>
         </div>
