@@ -1,6 +1,6 @@
 use anyhow::bail;
 use common::{
-    AssertionResponse, AuthBeginRequest, AuthBeginResponse, AuthFinishRequest, AuthFinishResponse,
+    AssertionResponse, AuthBeginResponse, AuthFinishRequest, AuthFinishResponse,
     PublicKeyRequest, PublicKeyResponse, ReadItemsResponse, RegisterBeginRequest,
     RegisterBeginResponse, RegisterFinishRequest, RegisterFinishResponse, RegisterPublicKeyCredential,
     SaveTextRequest, SaveTextResponse,
@@ -97,15 +97,9 @@ pub async fn finish_registration(
     Ok(resp.json().await?)
 }
 
-pub async fn auth_begin(email: String) -> anyhow::Result<AuthBeginResponse> {
-    let resp = post("/api/auth/begin")
-        .json(&AuthBeginRequest { email })?
-        .send()
-        .await?;
+pub async fn auth_begin() -> anyhow::Result<AuthBeginResponse> {
+    let resp = post("/api/auth/begin").send().await?;
 
-    if resp.status() == 401 {
-        anyhow::bail!("No registered security key found for this email.");
-    }
     if resp.status() != 200 {
         anyhow::bail!("Auth begin failed ({}): {}", resp.status(), resp.status_text());
     }
@@ -114,11 +108,11 @@ pub async fn auth_begin(email: String) -> anyhow::Result<AuthBeginResponse> {
 }
 
 pub async fn auth_finish(
-    email: String,
+    challenge_id: String,
     assertion: AssertionResponse,
 ) -> anyhow::Result<AuthFinishResponse> {
     let resp = post("/api/auth/finish")
-        .json(&AuthFinishRequest { email, assertion })?
+        .json(&AuthFinishRequest { challenge_id, assertion })?
         .send()
         .await?;
 

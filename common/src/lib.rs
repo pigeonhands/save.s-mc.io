@@ -38,13 +38,9 @@ pub struct RegisterFinishRequest {
 pub struct RegisterFinishResponse {}
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct AuthBeginRequest {
-    pub email: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
 pub struct AuthBeginResponse {
     pub options: PublicKeyCredentialRequestOptions,
+    pub challenge_id: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -58,7 +54,7 @@ pub struct AssertionResponse {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AuthFinishRequest {
-    pub email: String,
+    pub challenge_id: String,
     pub assertion: AssertionResponse,
 }
 

@@ -58,7 +58,6 @@ fn LoginForm(
     let (session_token, _, _) =
         use_session_storage::<String, FromToStringCodec>("session_token");
 
-    let (email, set_email) = signal(String::new());
     let (popover_text, set_popover_text) = signal(String::new());
     let (loading, set_loading) = signal(false);
 
@@ -82,16 +81,10 @@ fn LoginForm(
     });
 
     let on_login = move |_| {
-        let email_val = email.get_untracked();
-        if email_val.is_empty() {
-            set_popover_text.set("Please enter your email address.".into());
-            return;
-        }
-
         set_loading.set(true);
         spawn_local(async move {
             let result = async {
-                let begin_resp = api::auth_begin(email_val.clone()).await?;
+                let begin_resp = api::auth_begin().await?;
 
                 let options_js = serde_wasm_bindgen::to_value(&begin_resp.options)
                     .map_err(|e| anyhow::anyhow!("serialize options failed: {e:?}"))?;
@@ -122,7 +115,7 @@ fn LoginForm(
                     user_handle: response.user_handle().map(|buf| js_sys::Uint8Array::new(&buf).to_vec()),
                 };
 
-                let finish_resp = api::auth_finish(email_val, assertion).await?;
+                let finish_resp = api::auth_finish(begin_resp.challenge_id, assertion).await?;
                 let token = finish_resp.session_token;
                 let items_resp = api::read_items(&token).await?;
 
@@ -146,22 +139,6 @@ fn LoginForm(
 
     view! {
         <components::popover::Popover text={popover_text} />
-
-        <div box-="round" shear-="top" class="w-full">
-            <div class="header">
-                <span class="box-title">Email Address</span>
-            </div>
-            <div class="p-3">
-                <input
-                    type="email"
-                    class="w-full"
-                    placeholder="you@example.com"
-                    prop:value={move || email.get()}
-                    on:input:target={move |e| set_email.set(e.target().value())}
-                />
-            </div>
-        </div>
-
         <div class="grid grid-cols-1">
             <button
                 type="button"
