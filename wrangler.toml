@@ -20,7 +20,7 @@ enabled = true
 [[d1_databases]]
 binding = "DB"
 database_name = "save"
-database_id = "f4cee059-9c5f-4143-b972-8faf6bd0c3f7"
+database_id = "4c49cfb3-ee7b-469c-a64d-71852e3a2497"
 
 [[kv_namespaces]]
 binding = "KV"
