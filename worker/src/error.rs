@@ -9,17 +9,11 @@ pub enum HttpError {
     #[error("authentication required")]
     Unauthorized,
 
-    #[error("user may not perform that action")]
-    Forbidden,
-
     #[error("user failed the captcha")]
     BadCaptcha,
 
     #[error("request path not found")]
     NotFound,
-
-    #[error("error in the request body")]
-    UnprocessableEntity,
 
     #[error("Internal http error. {0:?}")]
     HttpError(reqwest::Error),
@@ -35,12 +29,10 @@ impl HttpError {
     fn status_code(&self) -> StatusCode {
         match self {
             Self::Unauthorized => StatusCode::UNAUTHORIZED,
-            Self::Forbidden => StatusCode::FORBIDDEN,
             Self::BadCaptcha => StatusCode::BAD_REQUEST,
             Self::NotFound => StatusCode::NOT_FOUND,
             Self::HttpError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             Self::WorkerError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            Self::UnprocessableEntity { .. } => StatusCode::UNPROCESSABLE_ENTITY,
             Self::Anyhow(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

@@ -1,4 +1,3 @@
-use leptos::tachys::view::keyed::SerializableKey;
 use pgp::{
     armor,
     composed::{ArmorOptions, Deserializable, MessageBuilder, SignedPublicKey, SignedPublicSubKey},

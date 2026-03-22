@@ -12,7 +12,6 @@ mod pages;
 mod providers;
 
 // Top-Level pages
-use crate::pages::home::Home;
 use crate::pages::read::Read;
 use crate::pages::register::Register;
 use crate::pages::save::Save;

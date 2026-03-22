@@ -2,8 +2,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::HttpError;
 
-const TURNSTILE_PRIVATE_KEY: Option<&'static str> = option_env!("TURNSTILE_PRIVATE_KEY");
-
 #[derive(Serialize, Deserialize)]
 struct RequestParams {
     pub secret: String,

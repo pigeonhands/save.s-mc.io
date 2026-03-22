@@ -5,10 +5,6 @@ use worker::{D1Database, Env, kv::KvStore, send::SendWrapper};
 
 type WrappedState<T> = Arc<SendWrapper<T>>;
 
-pub struct InnerContext {
-    env: Env,
-}
-
 #[derive(Clone)]
 pub struct AppState {
     pub env: WrappedState<Env>,

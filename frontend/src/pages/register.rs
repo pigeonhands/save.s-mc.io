@@ -28,15 +28,13 @@ pub fn Register() -> impl IntoView {
 pub struct VerifyData {
     pub email: String,
     pub passkey: std::sync::Arc<PublicKeyCredentialCreationOptions>,
-    pub pgp: String,
 }
 
 impl VerifyData {
-    pub fn new(email: String, passkey: PublicKeyCredentialCreationOptions, pgp: String) -> Self {
+    pub fn new(email: String, passkey: PublicKeyCredentialCreationOptions) -> Self {
         Self {
             email,
             passkey: std::sync::Arc::new(passkey),
-            pgp,
         }
     }
 }
@@ -183,7 +181,6 @@ pub fn SubmitPgpKey(
             set_form_progress.set(RegisterFormProgress::VerificationBegin(VerifyData::new(
                 selected_email.get_untracked(),
                 register_begin_resp.passkey_challenge,
-                register_begin_resp.pgp_channenge,
             )));
             Ok(())
         };

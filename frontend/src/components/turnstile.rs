@@ -1,8 +1,7 @@
 // Turnstile
 use leptos::prelude::*;
-use wasm_bindgen::{convert::IntoWasmAbi, prelude::*};
+use wasm_bindgen::prelude::*;
 use web_sys::{
-    Element,
     js_sys::{self, JsString, Reflect},
     wasm_bindgen::prelude::Closure,
 };
@@ -95,15 +94,3 @@ pub fn render() -> bool {
     true
 }
 
-pub fn reset() -> bool {
-    let t_js = match get_obj() {
-        Some(obj) => obj,
-        None => {
-            log::warn!("No turnstile object on window");
-            return false;
-        }
-    };
-
-    t_js.reset(".cf-turnstile".into());
-    true
-}

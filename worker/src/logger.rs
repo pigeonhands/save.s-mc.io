@@ -2,38 +2,9 @@
 
 //! Logger implementation for Cloudflare Workers.
 //! Bridges the [`log`](https://crates.io/crates/log) ecosystem to Cloudflare Worker.
-//!
-//! # Example
-//!
-//! Initialize the logger with a string:
-//!
-//! ```rust
-//! worker_logger::init_with_string("info");
-//! ```
-//!
-//! Or initialize with a level struct:
-//!
-//! ```rust
-//! use log::Level;
-//! worker_logger::init_with_level(&Level::Debug);
-//! ```
-//!
-//! Or with a Cloudflare Worker environment variable:
-//!
-//! ```rust,ignore
-//! worker_logger::init_with_env(env, "LOG")?;
-//! ```
-//!
-//! # Features
-//!
-//!  - `env_logger_string`: Enables advanced logging filters. Uses the same syntax as
-//!    [`env_logger`](https://crates.io/crates/env_logger). For more details, please visit
-//!    <https://docs.rs/env_logger/latest/env_logger/#enabling-logging>.
-//!  - `color`: Enable colored output with [`colored`](https://crates.io/crates/colored).
 
 use log::{Level, Metadata, Record, set_max_level};
 use worker::{Date, console_debug, console_error, console_log, console_warn};
-use worker::{Env as WorkerEnv, Error as WorkerError};
 
 use log::set_logger;
 
@@ -98,20 +69,9 @@ impl log::Log for Logger {
     fn flush(&self) {}
 }
 
-/// Initialize and install a logger with a string
-pub fn init_with_string<S: AsRef<str>>(init_string: S) {
-    Logger::new(init_string).set_logger();
-}
-
 /// Initialize and install a logger with a `log::Level`
 pub fn init_with_level(level: &Level) {
     Logger::new(level.as_str()).set_logger();
-}
-
-/// Initialize and install a logger with a Cloudflare Workers environment variable
-pub fn init_with_env<S: AsRef<str>>(env: &WorkerEnv, env_name: S) -> Result<(), WorkerError> {
-    Logger::new(env.var(env_name.as_ref())?.to_string()).set_logger();
-    Ok(())
 }
 
 #[cfg(test)]

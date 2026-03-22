@@ -1,6 +1,5 @@
 use common::{PublicKeyRequest, PublicKeyResponse, SaveTextRequest, SaveTextResponse};
 use pgp::composed::{Esk, Message};
-use pgp::types::KeyDetails;
 use worker::send::{SendFuture, SendWrapper};
 
 use crate::{

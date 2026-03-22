@@ -1,5 +1,4 @@
 use leptos::{
-    html,
     prelude::*,
     reactive::spawn_local,
     server::codee::string::{FromToStringCodec, OptionCodec},
