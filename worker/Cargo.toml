@@ -1,5 +1,5 @@
 [package]
-name = "worker"
+name = "save-worker"
 version = "0.1.0"
 edition = "2024"
 authors = ["Sam M <git@s-mc.io>"]
@@ -16,9 +16,12 @@ crate-type = ["cdylib"]
 
 [dependencies]
 passkey-types.workspace = true
+webauthn-rs-proto = { workspace = true }
+sha2 = { version = "0.10", default-features = false }
+base64 = { workspace = true }
 common = { path = "../common", version = "*" }
-worker = { version = "0.6.0", features = ['http', 'axum', 'd1'] }
-worker-macros = { version = "0.6.0", features = ['http'] }
+worker = { version = "0.7", features = ['http', 'axum', 'd1'] }
+worker-macros = { version = "0.7", features = ['http'] }
 axum = { version = "0.8", default-features = false, features = [
     "query",
     "json",

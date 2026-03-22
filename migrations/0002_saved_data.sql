@@ -2,7 +2,7 @@
 
 CREATE TABLE saved (
     saved_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER,
+    user_id TEXT,
     data_type TEXT NOT NULL,
     description TEXT NOT NULL,
 
@@ -11,10 +11,10 @@ CREATE TABLE saved (
     expires_at DATE GENERATED ALWAYS AS (
         date(created_at, '+30 day')
     ) VIRTUAL,
-    
+
     FOREIGN KEY(user_id) REFERENCES users(user_id)
         ON DELETE SET NULL, -- no cascade so files can be cleaned up
-    
+
     CHECK (data_type in ('text', 'file'))
 );
 

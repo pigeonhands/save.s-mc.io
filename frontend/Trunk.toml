@@ -29,7 +29,7 @@ open = false
 # Protocol used for autoreload WebSockets connection.
 # ws_protocol = "ws"
 # The certificate/private key pair to use for TLS, which is enabled if both are set.
-# tls_key_path = "self_signed_certs/key.pem"
-# tls_cert_path = "self_signed_certs/cert.pem"
+tls_key_path = "self_signed_certs/key.pem"
+tls_cert_path = "self_signed_certs/cert.pem"
 # Additional headers to send. NOTE: header names must be valid HTTP headers.
 # headers = { "X-Foo" = "bar" }

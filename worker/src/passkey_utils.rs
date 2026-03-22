@@ -3,9 +3,9 @@ use coset::{CborSerializable, iana};
 use passkey_types::{
     ctap2::AuthenticatorData,
     webauthn::{
-        AttestationConveyancePreference, AuthenticatedPublicKeyCredential,
-        AuthenticatorSelectionCriteria, PublicKeyCredentialCreationOptions,
-        PublicKeyCredentialParameters, PublicKeyCredentialType, PublicKeyCredentialUserEntity,
+        AttestationConveyancePreference, AuthenticatorSelectionCriteria,
+        PublicKeyCredentialCreationOptions, PublicKeyCredentialParameters,
+        PublicKeyCredentialType, PublicKeyCredentialUserEntity,
     },
 };
 use uuid::Uuid;
@@ -46,6 +46,10 @@ impl FromRef<AppState> for PasskeyCtx {
 }
 
 impl PasskeyCtx {
+    pub fn rp_id(&self) -> &str {
+        &self.host
+    }
+
     pub fn register_start(
         &self,
         email: &str,
@@ -98,30 +102,29 @@ impl PasskeyCtx {
     }
 
     pub fn register_finish(
-        response: AuthenticatedPublicKeyCredential,
-        stored_challenge: &str,
-        stored_rp_id: &[u8],
+        response: &webauthn_rs_proto::RegisterPublicKeyCredential,
+        stored_challenge_b64: &str,
+        rp_id: &str,
     ) -> anyhow::Result<Vec<u8>> {
+        use sha2::Digest;
+
         let client_data: CollectedClientData =
             serde_json::from_slice(&response.response.client_data_json)?;
 
-        if client_data.challenge != stored_challenge {
-            anyhow::bail!("Provieded channenge does not match store challenge");
+        if client_data.challenge != stored_challenge_b64 {
+            anyhow::bail!("Challenge does not match stored challenge");
         }
 
-        let attestation: RawAttestationObject = ciborium::from_reader(
-            &response
-                .response
-                .attestation_object
-                .ok_or_else(|| anyhow::anyhow!("No attestation_object object"))?[..],
-        )
-        .map_err(|_| anyhow::anyhow!("Failed to decode attestation CBOR"))?;
+        let attestation: RawAttestationObject =
+            ciborium::from_reader(&response.response.attestation_object[..])
+                .map_err(|_| anyhow::anyhow!("Failed to decode attestation CBOR"))?;
 
         let auth_data = AuthenticatorData::from_slice(attestation.auth_data.as_slice())
             .map_err(|_| anyhow::anyhow!("Invalid AuthenticatorData format"))?;
 
-        if auth_data.rp_id_hash() != stored_rp_id {
-            anyhow::bail!("RP ID Hash mismatch. Credential not for this domain.")
+        let expected_rp_id_hash = sha2::Sha256::digest(rp_id.as_bytes());
+        if auth_data.rp_id_hash() != expected_rp_id_hash.as_slice() {
+            anyhow::bail!("RP ID Hash mismatch. Credential not for this domain.");
         }
 
         let cred_data = auth_data
@@ -131,6 +134,6 @@ impl PasskeyCtx {
         Ok(cred_data
             .key
             .to_vec()
-            .map_err(|e| anyhow::anyhow!("Error convering cred key to vec: {}", e))?)
+            .map_err(|e| anyhow::anyhow!("Error converting cred key to vec: {}", e))?)
     }
 }

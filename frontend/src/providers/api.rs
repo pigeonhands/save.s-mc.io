@@ -1,5 +1,8 @@
 use anyhow::bail;
-use common::{PublicKeyRequest, PublicKeyResponse, RegisterBeginRequest, RegisterBeginResponse};
+use common::{
+    PublicKeyRequest, PublicKeyResponse, RegisterBeginRequest, RegisterBeginResponse,
+    RegisterFinishRequest, RegisterFinishResponse, RegisterPublicKeyCredential,
+};
 use gloo::net::http::{Request, RequestBuilder};
 use struct_iterable::Iterable;
 
@@ -102,4 +105,28 @@ pub async fn begin_registration(
     let json_resp = resp.json().await?;
 
     Ok(json_resp)
+}
+
+pub async fn finish_registration(
+    email: String,
+    credential: RegisterPublicKeyCredential,
+) -> anyhow::Result<RegisterFinishResponse> {
+    let resp = post("/api/register/finish")
+        .json(&RegisterFinishRequest { email, credential })?
+        .send()
+        .await?;
+
+    if resp.status() == 401 {
+        anyhow::bail!("Registration session expired. Please start over.");
+    }
+
+    if resp.status() != 200 {
+        anyhow::bail!(
+            "Registration failed ({}): {}",
+            resp.status(),
+            resp.status_text()
+        );
+    }
+
+    Ok(resp.json().await?)
 }

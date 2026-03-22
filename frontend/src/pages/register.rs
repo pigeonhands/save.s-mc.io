@@ -26,13 +26,15 @@ pub fn Register() -> impl IntoView {
 
 #[derive(Debug, Clone)]
 pub struct VerifyData {
+    pub email: String,
     pub passkey: std::sync::Arc<PublicKeyCredentialCreationOptions>,
     pub pgp: String,
 }
 
 impl VerifyData {
-    pub fn new(passkey: PublicKeyCredentialCreationOptions, pgp: String) -> Self {
+    pub fn new(email: String, passkey: PublicKeyCredentialCreationOptions, pgp: String) -> Self {
         Self {
+            email,
             passkey: std::sync::Arc::new(passkey),
             pgp,
         }
@@ -44,6 +46,7 @@ pub enum RegisterFormProgress {
     Empty,
     PgpKeyLoaded(pgputils::PublicKeyInfo),
     VerificationBegin(VerifyData),
+    Registered,
 }
 
 #[component]
@@ -63,7 +66,13 @@ pub fn RegisterForm() -> impl IntoView {
             }
             .into_any(),
             RegisterFormProgress::VerificationBegin(data) => view! {
-                <Verify data />
+                <Verify data set_form_progress />
+            }
+            .into_any(),
+            RegisterFormProgress::Registered => view! {
+                <div class="text-center">
+                    <p>"Registration complete! You can now log in."</p>
+                </div>
             }
             .into_any(),
         }
@@ -172,6 +181,7 @@ pub fn SubmitPgpKey(
             .await?;
 
             set_form_progress.set(RegisterFormProgress::VerificationBegin(VerifyData::new(
+                selected_email.get_untracked(),
                 register_begin_resp.passkey_challenge,
                 register_begin_resp.pgp_channenge,
             )));
@@ -262,11 +272,20 @@ pub fn SubmitPgpKey(
 }
 
 #[component]
-pub fn Verify(data: VerifyData) -> impl IntoView {
+pub fn Verify(
+    data: VerifyData,
+    set_form_progress: WriteSignal<RegisterFormProgress>,
+) -> impl IntoView {
+    let (popover_text, set_popover_text) = signal(String::new());
+    let (verifying, set_verifying) = signal(false);
+
     let on_verify = move |_| {
         let ccr = {
             let js_value = serde_wasm_bindgen::to_value(&data.passkey).unwrap();
-            web_sys::CredentialCreationOptions::from(js_value)
+            let pub_key = web_sys::PublicKeyCredentialCreationOptions::from(js_value);
+            let opts = web_sys::CredentialCreationOptions::new();
+            opts.set_public_key(&pub_key);
+            opts
         };
 
         let create_credentials = JsFuture::from(
@@ -277,33 +296,45 @@ pub fn Verify(data: VerifyData) -> impl IntoView {
                 .unwrap(),
         );
 
+        let email = data.email.clone();
+        set_verifying.set(true);
         spawn_local(async move {
-            let w_rpkc = {
-                let js_value = create_credentials.await.unwrap();
-                web_sys::PublicKeyCredential::from(js_value)
+            let credential = {
+                let js_value = match create_credentials.await {
+                    Ok(v) => v,
+                    Err(e) => {
+                        log::error!("credentials.create() failed: {:?}", e);
+                        set_popover_text.set("Security key registration failed. Please try again.".into());
+                        set_verifying.set(false);
+                        return;
+                    }
+                };
+                webauthn_rs_proto::RegisterPublicKeyCredential::from(
+                    web_sys::PublicKeyCredential::from(js_value),
+                )
             };
-            // let jobj = web_sys::AuthenticatorAssertionResponse::from(JsValue::from(
-            //     web_sys::PublicKeyCredential::from(w_rpkc.clone()).response(),
-            // ));
 
-            let rpkc = webauthn_rs_proto::RegisterPublicKeyCredential::from(w_rpkc);
-
-            // let rpkc: passkey_types::webauthn::CreatedPublicKeyCredential =
-            //     serde_wasm_bindgen::from_value(w_rpkc).unwrap();
-            //
-            // log::debug!("{:?}", rpkc);
-
-            //
+            match api::finish_registration(email, credential).await {
+                Ok(_) => {
+                    set_form_progress.set(RegisterFormProgress::Registered);
+                }
+                Err(e) => {
+                    set_popover_text.set(format!("Registration failed: {}", e));
+                    set_verifying.set(false);
+                }
+            }
         });
     };
+
     view! {
+        <components::popover::Popover text={popover_text} />
         <button
             type="button"
+            prop:disabled={move || verifying.get()}
             on:click={on_verify}
             variant-="foreground1"
             id="verify-button">
-        Verify
+            { move || if verifying.get() { "Registering..." } else { "Verify with Security Key" } }
         </button>
-
     }
 }

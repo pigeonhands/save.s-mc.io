@@ -47,7 +47,7 @@ build-release:
 .PHONY: dev
 dev:
 	TURNSTILE_SITE_KEY="1x00000000000000000000AA" \
-		npx wrangler dev --env dev --log-level info
+		npx wrangler dev --env dev --log-level info --local-protocol https
 
 .PHONY: deploy
 deploy:
