@@ -22,11 +22,14 @@ wasm-logger = "0.2.0"
 web-sys = { version = "0.3.77", features = [
     "Attr",
     "CredentialCreationOptions",
+    "CredentialRequestOptions",
     "CredentialsContainer",
     "PublicKeyCredential",
+    "PublicKeyCredentialRequestOptions",
     "AuthenticatorResponse",
     "AuthenticatorAssertionResponse",
 ] }
+js-sys = "0.3.77"
 pgp = { workspace = true }
 rand = { version = "0.8.5", features = ["std_rng"], default-features = false }
 anyhow = "1.0.98"

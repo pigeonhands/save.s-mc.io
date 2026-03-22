@@ -13,6 +13,7 @@ mod providers;
 
 // Top-Level pages
 use crate::pages::home::Home;
+use crate::pages::read::Read;
 use crate::pages::register::Register;
 use crate::pages::save::Save;
 
@@ -36,6 +37,7 @@ pub fn App() -> impl IntoView {
             <Router>
                 <Routes fallback=|| view! { NotFound }>
                     <Route path=path!("/") view=Save />
+                    <Route path=path!("/read") view=Read />
                     <Route path=path!("/register") view=Register />
                 </Routes>
             </Router>

@@ -87,8 +87,11 @@ pub async fn register_finish(
     let session: RegisterSession =
         serde_json::from_str(&session_json).map_err(anyhow::Error::from)?;
 
-    PasskeyCtx::register_finish(&req.credential, &session.challenge_b64, passkey.rp_id())
-        .map_err(|e| anyhow::anyhow!("passkey verification failed: {e}"))?;
+    let cose_key_bytes =
+        PasskeyCtx::register_finish(&req.credential, &session.challenge_b64, passkey.rp_id())
+            .map_err(|e| anyhow::anyhow!("passkey verification failed: {e}"))?;
+    let cose_key_b64 = base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(&cose_key_bytes);
+    let credential_id = req.credential.id.clone();
 
     // Delete the used challenge
     SendFuture::new(kv.delete(&kv_key))
@@ -109,11 +112,22 @@ pub async fn register_finish(
     // Insert PGP key
     let insert_key = SendWrapper::new(
         db.prepare("INSERT INTO keys (user_id, public_key) VALUES (?, ?)")
-            .bind(&[user_id.into(), session.pub_key.into()])?,
+            .bind(&[user_id.clone().into(), session.pub_key.into()])?,
     );
     SendFuture::new(insert_key.run())
         .await
         .map_err(|e| anyhow::anyhow!("failed to insert key: {e:?}"))?;
+
+    // Insert passkey credential
+    let insert_cred = SendWrapper::new(
+        db.prepare(
+            "INSERT INTO passkey_credentials (credential_id, user_id, cose_public_key) VALUES (?, ?, ?)",
+        )
+        .bind(&[credential_id.into(), user_id.into(), cose_key_b64.into()])?,
+    );
+    SendFuture::new(insert_cred.run())
+        .await
+        .map_err(|e| anyhow::anyhow!("failed to insert passkey credential: {e:?}"))?;
 
     Ok(Json(RegisterFinishResponse {}))
 }

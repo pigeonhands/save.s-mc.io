@@ -19,6 +19,7 @@ passkey-types.workspace = true
 webauthn-rs-proto = { workspace = true }
 sha2 = { version = "0.10", default-features = false }
 base64 = { workspace = true }
+p256 = { version = "0.13", default-features = false, features = ["ecdsa"] }
 common = { path = "../common", version = "*" }
 worker = { version = "0.7", features = ['http', 'axum', 'd1'] }
 worker-macros = { version = "0.7", features = ['http'] }

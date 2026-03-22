@@ -1,3 +1,5 @@
+mod auth;
+mod read;
 mod register;
 mod save;
 
@@ -12,4 +14,6 @@ pub fn api() -> Router<AppState> {
     Router::new()
         .nest("/save", save::router())
         .nest("/register", register::router())
+        .nest("/auth", auth::router())
+        .nest("/read", read::router())
 }

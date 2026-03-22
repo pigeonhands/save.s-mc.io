@@ -1,7 +1,8 @@
 use anyhow::bail;
 use common::{
-    PublicKeyRequest, PublicKeyResponse, RegisterBeginRequest, RegisterBeginResponse,
-    RegisterFinishRequest, RegisterFinishResponse, RegisterPublicKeyCredential,
+    AssertionResponse, AuthBeginRequest, AuthBeginResponse, AuthFinishRequest, AuthFinishResponse,
+    PublicKeyRequest, PublicKeyResponse, ReadItemsResponse, RegisterBeginRequest,
+    RegisterBeginResponse, RegisterFinishRequest, RegisterFinishResponse, RegisterPublicKeyCredential,
 };
 use gloo::net::http::{Request, RequestBuilder};
 use struct_iterable::Iterable;
@@ -45,7 +46,7 @@ fn post(url: &str) -> RequestBuilder {
 }
 
 pub async fn get_public_key(email: String) -> anyhow::Result<PublicKeyResponse> {
-    let test = PublicKeyRequest {
+    let _test = PublicKeyRequest {
         email: email.clone(),
     };
 
@@ -71,9 +72,7 @@ pub async fn get_public_key(email: String) -> anyhow::Result<PublicKeyResponse> 
         );
     }
 
-    let json_resp = resp.json().await?;
-
-    Ok(json_resp)
+    Ok(resp.json().await?)
 }
 
 pub async fn begin_registration(
@@ -96,15 +95,13 @@ pub async fn begin_registration(
 
     if resp.status() != 200 {
         bail!(
-            "Failed to get pub key ({}). Api returned {}",
-            resp.status_text(),
-            resp.status()
+            "Failed to begin registration ({}): {}",
+            resp.status(),
+            resp.status_text()
         );
     }
 
-    let json_resp = resp.json().await?;
-
-    Ok(json_resp)
+    Ok(resp.json().await?)
 }
 
 pub async fn finish_registration(
@@ -126,6 +123,60 @@ pub async fn finish_registration(
             resp.status(),
             resp.status_text()
         );
+    }
+
+    Ok(resp.json().await?)
+}
+
+pub async fn auth_begin(email: String) -> anyhow::Result<AuthBeginResponse> {
+    let resp = post("/api/auth/begin")
+        .json(&AuthBeginRequest { email })?
+        .send()
+        .await?;
+
+    if resp.status() == 401 {
+        anyhow::bail!("No registered security key found for this email.");
+    }
+
+    if resp.status() != 200 {
+        anyhow::bail!("Auth begin failed ({}): {}", resp.status(), resp.status_text());
+    }
+
+    Ok(resp.json().await?)
+}
+
+pub async fn auth_finish(
+    email: String,
+    assertion: AssertionResponse,
+) -> anyhow::Result<AuthFinishResponse> {
+    let resp = post("/api/auth/finish")
+        .json(&AuthFinishRequest { email, assertion })?
+        .send()
+        .await?;
+
+    if resp.status() == 401 {
+        anyhow::bail!("Authentication failed. Wrong security key or expired session.");
+    }
+
+    if resp.status() != 200 {
+        anyhow::bail!("Auth finish failed ({}): {}", resp.status(), resp.status_text());
+    }
+
+    Ok(resp.json().await?)
+}
+
+pub async fn read_items(session_token: &str) -> anyhow::Result<ReadItemsResponse> {
+    let resp = Request::get("/api/read/items")
+        .header("Authorization", &format!("Bearer {session_token}"))
+        .send()
+        .await?;
+
+    if resp.status() == 401 {
+        anyhow::bail!("Session expired. Please log in again.");
+    }
+
+    if resp.status() != 200 {
+        anyhow::bail!("Failed to load items ({}): {}", resp.status(), resp.status_text());
     }
 
     Ok(resp.json().await?)
